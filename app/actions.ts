@@ -53,7 +53,7 @@ Room Type: ${room.roomType}
 Depth: ${room.depth}
 Character: ${character.name} the ${character.class} (Level ${character.level})
 Character Tags: ${character.tags.join(", ")}
-Recent Events: ${character.storyEvents.slice(-3).join(", ")}
+Recent Events: ${(character.storyEvents || []).slice(-3).join(", ")}
 
 Generate two descriptions:
 1. A practical room description (2-3 sentences)

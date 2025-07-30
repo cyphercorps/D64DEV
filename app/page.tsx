@@ -608,6 +608,7 @@ export default function Dungeon64() {
       portrait: characterPortrait,
       joinedAt: Date.now(),
       backstory: backgroundData.startingLore,
+      storyEvents: [],
     }
 
     // Add random symbolic tag
@@ -727,6 +728,7 @@ export default function Dungeon64() {
       portrait: npcData.portrait,
       joinedAt: Date.now(),
       backstory: npcData.backstory,
+      storyEvents: [],
     }
 
     addPartyMember(newMember)
