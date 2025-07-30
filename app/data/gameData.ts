@@ -1,0 +1,260 @@
+
+import { Item } from "../types/game"
+
+export const CLASSES = [
+  {
+    name: "Warrior",
+    bonuses: { STR: 3, CON: 2, DEX: 1 },
+    startingItems: [
+      { name: "Iron Sword", type: "weapon" as const, damage: 8, value: 50, effect: "A sturdy blade" },
+      { name: "Leather Armor", type: "armor" as const, value: 30, effect: "+2 Defense" },
+    ],
+    tags: ["Battle-born", "Stalwart"],
+    traits: ["Determined", "Protective", "Honor-bound"],
+    description: "Masters of combat and endurance",
+  },
+  {
+    name: "Rogue",
+    bonuses: { DEX: 3, INT: 2, CHA: 1 },
+    startingItems: [
+      { name: "Curved Dagger", type: "weapon" as const, damage: 6, value: 40, effect: "Swift and silent" },
+      { name: "Lockpicks", type: "tool" as const, value: 20, effect: "Opens locked doors" },
+    ],
+    tags: ["Shadow-touched", "Cunning"],
+    traits: ["Cautious", "Opportunistic", "Independent"],
+    description: "Swift and cunning, masters of stealth",
+  },
+  {
+    name: "Mage",
+    bonuses: { INT: 3, WIS: 2, CHA: 1 },
+    startingItems: [
+      { name: "Wooden Staff", type: "weapon" as const, damage: 5, value: 35, effect: "Channels arcane power" },
+      { name: "Spell Scroll", type: "consumable" as const, value: 60, effect: "Casts Magic Missile" },
+    ],
+    tags: ["Arcane-touched", "Seeker"],
+    traits: ["Curious", "Analytical", "Ambitious"],
+    description: "Wielders of ancient magical forces",
+  },
+  {
+    name: "Cleric",
+    bonuses: { WIS: 3, CON: 2, STR: 1 },
+    startingItems: [
+      { name: "Holy Mace", type: "weapon" as const, damage: 7, value: 45, effect: "Blessed weapon" },
+      { name: "Healing Potion", type: "consumable" as const, healing: 15, value: 25, effect: "Restores health" },
+    ],
+    tags: ["Divine-blessed", "Protector"],
+    traits: ["Compassionate", "Faithful", "Resolute"],
+    description: "Champions of divine power and healing",
+  },
+]
+
+export const BACKGROUNDS = [
+  {
+    name: "Tomb Raider",
+    description: "You've plundered ancient sites before",
+    bonuses: { gold: 50, items: ["Rope", "Torch"] },
+    tags: ["Experienced", "Greedy"],
+    traits: ["Cautious", "Opportunistic"],
+    startingLore: "The weight of gold has always called to you louder than the whispers of the dead.",
+  },
+  {
+    name: "Cursed Noble",
+    description: "Nobility stripped away by dark magic",
+    bonuses: { gold: 100, items: ["Silver Ring"] },
+    tags: ["Fallen", "Proud"],
+    traits: ["Arrogant", "Desperate"],
+    startingLore: "Your bloodline carries both privilege and an ancient curse that drives you into darkness.",
+  },
+  {
+    name: "Death Cultist",
+    description: "Servant of dark powers seeking enlightenment",
+    bonuses: { hp: 5, items: ["Ritual Dagger"] },
+    tags: ["Devoted", "Twisted"],
+    traits: ["Fanatical", "Fearless"],
+    startingLore: "Death is not your enemy but your teacher, and these depths hold lessons yet unlearned.",
+  },
+  {
+    name: "Lost Scholar",
+    description: "Academic driven mad by forbidden knowledge",
+    bonuses: { xp: 25, items: ["Ancient Tome"] },
+    tags: ["Learned", "Mad"],
+    traits: ["Obsessive", "Brilliant"],
+    startingLore: "The texts spoke of power hidden in the deep places, and you must prove their truth.",
+  },
+  {
+    name: "Sole Survivor",
+    description: "Last of a failed expedition",
+    bonuses: { hp: 10, items: ["Healing Potion", "Rope"] },
+    tags: ["Haunted", "Resilient"],
+    traits: ["Paranoid", "Determined"],
+    startingLore: "Your companions fell to the dungeon's hunger, but you carry their memory and their mission.",
+  },
+]
+
+export const STAT_ARRAYS = [
+  { name: "Balanced", stats: { STR: 13, DEX: 13, CON: 13, INT: 13, WIS: 13, CHA: 13 } },
+  { name: "Warrior", stats: { STR: 15, DEX: 12, CON: 14, INT: 10, WIS: 11, CHA: 8 } },
+  { name: "Specialist", stats: { STR: 8, DEX: 15, CON: 12, INT: 14, WIS: 13, CHA: 10 } },
+  { name: "Mystic", stats: { STR: 10, DEX: 11, CON: 12, INT: 15, WIS: 14, CHA: 8 } },
+]
+
+export const PORTRAITS = ["⚔️", "🗡️", "🏹", "🔮", "📿", "💀", "👑", "🌟", "🔥", "❄️", "⚡", "🌙"]
+
+export const ROOM_TEMPLATES = [
+  {
+    ascii: [
+      "┌─────────┐",
+      "│    N    │",
+      "│         │",
+      "│  ░░░    │",
+      "│  ░@░  E │",
+      "│  ░░░    │",
+      "│         │",
+      "│    S    │",
+      "└─────────┘",
+    ],
+    exits: ["N", "E", "S"],
+    type: "chamber",
+  },
+  {
+    ascii: [
+      "┌─────────┐",
+      "│ W   N   │",
+      "│         │",
+      "│ ≈≈≈≈≈≈≈ │",
+      "│ ≈≈≈@≈≈≈ │",
+      "│ ≈≈≈≈≈≈≈ │",
+      "│         │",
+      "│    S    │",
+      "└─────────┘",
+    ],
+    exits: ["N", "W", "S"],
+    type: "flooded",
+  },
+  {
+    ascii: [
+      "┌─────────┐",
+      "│         │",
+      "│  ▲ ▲ ▲  │",
+      "│ ▲▲▲▲▲▲▲ │",
+      "│ ▲▲@▲▲▲▲ │",
+      "│ ▲▲▲▲▲▲▲ │",
+      "│  ▲ ▲ ▲  │",
+      "│    S    │",
+      "└─────────┘",
+    ],
+    exits: ["S"],
+    type: "trapped",
+  },
+  {
+    ascii: [
+      "┌─────────┐",
+      "│ W       │",
+      "│ ████████│",
+      "│ █    █ E│",
+      "│ █ @  █  │",
+      "│ █    █  │",
+      "│ ████████│",
+      "│    S    │",
+      "└─────────┘",
+    ],
+    exits: ["W", "E", "S"],
+    type: "corridor",
+  },
+  {
+    ascii: [
+      "┌─────────┐",
+      "│    N    │",
+      "│ ◊◊◊◊◊◊◊ │",
+      "│ ◊     ◊ │",
+      "│ ◊  @  ◊ │",
+      "│ ◊     ◊ │",
+      "│ ◊◊◊◊◊◊◊ │",
+      "│    S    │",
+      "└─────────┘",
+    ],
+    exits: ["N", "S"],
+    type: "shrine",
+  },
+  {
+    ascii: [
+      "┌─────────┐",
+      "│    N    │",
+      "│ ╔═════╗ │",
+      "│ ║     ║ │",
+      "│ ║  @  ║ │",
+      "│ ║     ║ │",
+      "│ ╚═════╝ │",
+      "│    S    │",
+      "└─────────┘",
+    ],
+    exits: ["N", "S"],
+    type: "vault",
+  },
+]
+
+export const LOOT_ITEMS: Item[] = [
+  { name: "Healing Potion", type: "consumable", healing: 15, value: 25, effect: "Restores health" },
+  { name: "Mana Potion", type: "consumable", value: 30, effect: "Restores magical energy" },
+  { name: "Ancient Coin", type: "treasure", value: 50 },
+  { name: "Silver Ring", type: "treasure", value: 75 },
+  { name: "Mystic Gem", type: "treasure", value: 120 },
+  { name: "Iron Key", type: "tool", value: 40, effect: "Opens locked passages" },
+  { name: "Torch", type: "tool", value: 10, effect: "Illuminates dark places" },
+  { name: "Rope", type: "tool", value: 15, effect: "Useful for climbing" },
+  { name: "Enchanted Dagger", type: "weapon", damage: 8, value: 80, effect: "Glows with magical power" },
+  { name: "Steel Sword", type: "weapon", damage: 10, value: 100, effect: "A masterwork blade" },
+  { name: "Ritual Dagger", type: "weapon", damage: 5, value: 30, effect: "Cursed blade" },
+  { name: "Ancient Tome", type: "tool", value: 50, effect: "Contains forbidden knowledge" },
+]
+
+export const RECRUITABLE_NPCS = [
+  {
+    name: "Kira Shadowbane",
+    class: "Rogue",
+    portrait: "🗡️",
+    stats: { STR: 12, DEX: 16, CON: 13, INT: 14, WIS: 11, CHA: 10 },
+    tags: ["Shadow-touched", "Cunning", "Veteran"],
+    traits: ["Cautious", "Loyal", "Pragmatic"],
+    combatAI: "aggressive" as const,
+    backstory: "A former guild assassin seeking redemption in the depths.",
+    recruitmentCost: 200,
+    loyaltyRequirement: 0,
+  },
+  {
+    name: "Brother Marcus",
+    class: "Cleric",
+    portrait: "📿",
+    stats: { STR: 11, DEX: 9, CON: 15, INT: 12, WIS: 16, CHA: 13 },
+    tags: ["Divine-blessed", "Protector", "Faithful"],
+    traits: ["Compassionate", "Stubborn", "Wise"],
+    combatAI: "support" as const,
+    backstory: "A wandering priest drawn to cleanse this cursed place.",
+    recruitmentCost: 150,
+    loyaltyRequirement: 25,
+  },
+  {
+    name: "Zara Flameheart",
+    class: "Mage",
+    portrait: "🔮",
+    stats: { STR: 8, DEX: 12, CON: 11, INT: 17, WIS: 14, CHA: 12 },
+    tags: ["Arcane-touched", "Seeker", "Ambitious"],
+    traits: ["Curious", "Reckless", "Brilliant"],
+    combatAI: "balanced" as const,
+    backstory: "A young mage seeking forbidden knowledge in the dungeon's depths.",
+    recruitmentCost: 300,
+    loyaltyRequirement: 50,
+  },
+  {
+    name: "Grimjaw the Stalwart",
+    class: "Warrior",
+    portrait: "⚔️",
+    stats: { STR: 17, DEX: 10, CON: 16, INT: 9, WIS: 12, CHA: 8 },
+    tags: ["Battle-born", "Stalwart", "Veteran"],
+    traits: ["Determined", "Protective", "Gruff"],
+    combatAI: "defensive" as const,
+    backstory: "An old soldier who's seen too many battles, seeking one last glory.",
+    recruitmentCost: 250,
+    loyaltyRequirement: 30,
+  },
+]
