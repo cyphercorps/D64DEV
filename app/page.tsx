@@ -102,7 +102,7 @@ export default function Dungeon64() {
             const remainingAliveMembers = party.members.filter(m => 
               m.id === enemyResult.target.id ? newHp > 0 : m.hp > 0
             )
-
+            
             if (remainingAliveMembers.length === 0) {
               addLogEntry("Your party has been defeated...", "death")
               setGamePhase("death")
@@ -295,7 +295,7 @@ export default function Dungeon64() {
           knownSpells: [...member.knownSpells, spellToLearn]
         })
         addLogEntry(`${member.name} studies the ${item.name} and learns ${spellToLearn}!`, "system")
-
+        
         // Remove item from inventory
         if (isSharedItem) {
           setParty(prev => ({
@@ -321,7 +321,7 @@ export default function Dungeon64() {
 
       updatePartyMember(memberId, { hp: newHp })
       addLogEntry(`${member.name} uses ${item.name} and recovers ${healAmount} HP!`, "system")
-
+      
       // Remove item from inventory
       if (isSharedItem) {
         setParty(prev => ({
@@ -338,7 +338,7 @@ export default function Dungeon64() {
       if (item.effect) {
         addLogEntry(`${member.name} uses ${item.name}. ${item.effect}`, "system")
       }
-
+      
       // Remove item from inventory
       if (isSharedItem) {
         setParty(prev => ({
@@ -484,13 +484,10 @@ export default function Dungeon64() {
       const foundLoot = currentRoom.loot.splice(0, 1)[0] // Take one item
 
       // Add to party shared inventory
-      setParty(async prev => {
-        const enhancedLoot = await enhanceItemWithLore(foundLoot, `Found in ${currentRoom.roomType} at depth ${dungeon.depth}`)
-        return ({
-          ...prev!,
-          sharedInventory: [...prev!.sharedInventory, enhancedLoot]
-        })
-      })
+      setParty(prev => ({
+        ...prev!,
+        sharedInventory: [...prev!.sharedInventory, foundLoot]
+      }))
 
       addLogEntry(`You found: ${foundLoot.name}!`, "system")
       addLogEntry(foundLoot.effect || "A mysterious item of unknown purpose.", "narrative")
@@ -591,13 +588,10 @@ export default function Dungeon64() {
 
           // Add enemy loot to shared inventory
           if (currentEnemy.loot) {
-            setParty(async prev => {
-              const enhancedLoot = await Promise.all(currentEnemy.loot!.map(async item => await enhanceItemWithLore(item, `Looted from ${currentEnemy.name} after combat`)))
-              return ({
-                ...prev!,
-                sharedInventory: [...prev!.sharedInventory, ...enhancedLoot]
-              })
-            })
+            setParty(prev => ({
+              ...prev!,
+              sharedInventory: [...prev!.sharedInventory, ...currentEnemy.loot!]
+            }))
             addLogEntry(`Found: ${currentEnemy.loot.map(item => item.name).join(", ")}`, "system")
           }
 
@@ -617,24 +611,24 @@ export default function Dungeon64() {
       } else if (action === "cast_spell" && spellName) {
         const { MagicService } = await import("./services/magicService")
         const spellResult = MagicService.castSpell(currentMember, spellName, currentMember)
-
+        
         if (spellResult.success) {
           addLogEntry(spellResult.message, "combat")
-
+          
           // Update caster with used spell slot
           updatePartyMember(currentMember.id, {
             spellSlots: [...currentMember.spellSlots]
           })
-
+          
           // Apply spell damage to enemy if applicable
           if (spellResult.damage && spellResult.damage > 0) {
             const newEnemyHp = Math.max(0, currentEnemy.hp - spellResult.damage)
             setCurrentEnemy(prev => ({ ...prev!, hp: newEnemyHp }))
-
+            
             if (newEnemyHp <= 0) {
               addLogEntry(`The ${currentEnemy.name} is defeated by magic!`, "combat")
               addLogEntry("Victory belongs to your party!", "narrative")
-
+              
               // Victory logic same as attack
               const xpGained = currentEnemy.xpReward
               party.members.forEach((member) => {
@@ -653,13 +647,10 @@ export default function Dungeon64() {
               })
 
               if (currentEnemy.loot) {
-                setParty(async prev => {
-                  const enhancedLoot = await Promise.all(currentEnemy.loot!.map(async item => await enhanceItemWithLore(item)))
-                  return ({
-                    ...prev!,
-                    sharedInventory: [...prev!.sharedInventory, ...enhancedLoot]
-                  })
-                })
+                setParty(prev => ({
+                  ...prev!,
+                  sharedInventory: [...prev!.sharedInventory, ...currentEnemy.loot!]
+                }))
                 addLogEntry(`Found: ${currentEnemy.loot.map(item => item.name).join(", ")}`, "system")
               }
 
@@ -674,28 +665,28 @@ export default function Dungeon64() {
         } else {
           addLogEntry(spellResult.message, "system")
         }
-
+        
         setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
       } else if (action === "use_item" && item) {
         // Handle spell scrolls as spells
         if (item.type === "consumable" && item.spell) {
           const { MagicService } = await import("./services/magicService")
           const spellResult = MagicService.castSpell(currentMember, item.spell, currentMember)
-
+          
           if (spellResult.success) {
             addLogEntry(`${currentMember.name} reads the ${item.name}!`, "system")
             addLogEntry(spellResult.message, "combat")
-
+            
             // Remove scroll from inventory
             updatePartyMember(currentMember.id, {
               inventory: currentMember.inventory.filter(i => i !== item)
             })
-
+            
             // Apply spell damage to enemy if applicable
             if (spellResult.damage && spellResult.damage > 0) {
               const newEnemyHp = Math.max(0, currentEnemy.hp - spellResult.damage)
               setCurrentEnemy(prev => ({ ...prev!, hp: newEnemyHp }))
-
+              
               if (newEnemyHp <= 0) {
                 addLogEntry(`The ${currentEnemy.name} is defeated by the scroll's magic!`, "combat")
                 // Handle victory same as spell casting above
@@ -763,54 +754,6 @@ export default function Dungeon64() {
       </Card>
     </div>
   )
-
-  const getPlayerMember = () => party?.members.find(m => m.playerCharacter) || null
-
-  const enhanceItemWithLore = async (item: any, context?: string): Promise<any> => {
-    if (!item.symbolic && aiAvailable && !isProcessing) {
-      try {
-        const { generateAIItemLore } = await import("./services/aiService")
-        const lore = await generateAIItemLore(item, context)
-        return { ...item, symbolic: lore, aiGenerated: true }
-      } catch (error) {
-        console.error("Failed to generate item lore:", error)
-      }
-    }
-    return item
-  }
-
-  const updatePartyMember = (memberId: string, updates: Partial<PartyMember>) => {
-    setParty(prev => {
-      if (!prev) return prev
-
-      const updatedMembers = prev.members.map(member => {
-        if (member.id === memberId) {
-          return { ...member, ...updates }
-        }
-        return member
-      })
-
-      return { ...prev, members: updatedMembers }
-    })
-  }
-
-  const addPartyMember = (newMember: PartyMember) => {
-    setParty(prev => {
-      if (!prev) return prev
-      return { ...prev, members: [...prev.members, newMember] }
-    })
-  }
-
-  const resetGame = () => {
-    localStorage.clear()
-    setGamePhase("character-creation")
-    setParty(null)
-    setActivePartyMember(null)
-    setDungeon(null)
-    setCurrentEnemy(null)
-    setCombatTurnOrder([])
-    setCurrentTurnIndex(0)
-  }
 
   // Main Render
   if (gamePhase === "character-creation") {

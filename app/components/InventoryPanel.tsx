@@ -256,25 +256,15 @@ export default function InventoryPanel({
                 </div>
               )}
 
-              {selectedItem.spell && (
-                <div>
-                  <span className="text-purple-400 font-semibold">Spell: </span>
-                  <span className="text-purple-300">{selectedItem.spell}</span>
+              {selectedItem.aiGenerated && (
+                <div className="text-purple-400 text-sm italic">
+                  🤖 AI Generated Item
                 </div>
               )}
 
               {selectedItem.symbolic && (
-                <div className="mt-4 p-3 bg-gray-800 border border-yellow-600 rounded">
-                  <div className="text-yellow-400 font-semibold mb-1">✨ Lore</div>
-                  <div className="text-yellow-200 text-sm italic break-words">
-                    {selectedItem.symbolic}
-                  </div>
-                </div>
-              )}
-
-              {selectedItem.aiGenerated && (
-                <div className="text-purple-400 text-sm italic mt-2">
-                  🤖 AI Generated Item
+                <div className="text-cyan-400 text-sm italic break-words">
+                  {selectedItem.symbolic}
                 </div>
               )}
             </div>
