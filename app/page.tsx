@@ -764,6 +764,8 @@ export default function Dungeon64() {
     </div>
   )
 
+  const getPlayerMember = () => party?.members.find(m => m.playerCharacter) || null
+
   const enhanceItemWithLore = async (item: any, context?: string): Promise<any> => {
     if (!item.symbolic && aiAvailable && !isProcessing) {
       try {
@@ -775,6 +777,28 @@ export default function Dungeon64() {
       }
     }
     return item
+  }
+
+  const updatePartyMember = (memberId: string, updates: Partial<PartyMember>) => {
+    setParty(prev => {
+      if (!prev) return prev
+
+      const updatedMembers = prev.members.map(member => {
+        if (member.id === memberId) {
+          return { ...member, ...updates }
+        }
+        return member
+      })
+
+      return { ...prev, members: updatedMembers }
+    })
+  }
+
+  const addPartyMember = (newMember: PartyMember) => {
+    setParty(prev => {
+      if (!prev) return prev
+      return { ...prev, members: [...prev.members, newMember] }
+    })
   }
 
   const resetGame = () => {
