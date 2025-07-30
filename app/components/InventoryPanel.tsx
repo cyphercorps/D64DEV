@@ -258,28 +258,6 @@ export default function InventoryPanel({
           </Card>
         </div>
       )}
-          {onUseItem && (
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-6 px-2 text-xs bg-green-900 text-green-400 hover:bg-green-800 border-green-400"
-          onClick={() => onUseItem(activeMember.id, itemIndex, isSharedItem)}
-        disabled={
-          gamePhase === "combat" 
-            ? (!item.healing && item.type !== "consumable" && !item.spell)
-            : (!item.healing && item.type !== "consumable" && !item.name.includes("Ancient Tome"))
-        }
-        title={
-          gamePhase === "combat" 
-            ? "Use combat actions for spells and items during battle" 
-            : !item.healing && item.type !== "consumable" && !item.name.includes("Ancient Tome")
-              ? "This item cannot be used directly"
-              : undefined
-        }
-        >
-          Use
-        </Button>
-      )}
     </div>
   )
 }
