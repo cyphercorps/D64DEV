@@ -8,15 +8,13 @@ export interface Character {
   maxHp: number
   xp: number
   xpToNext: number
-  stats: {
-    STR: number
-    DEX: number
-    CON: number
-    INT: number
-    WIS: number
-    CHA: number
-  }
+  stats: Stats
+  baseStats: Stats
   inventory: Item[]
+  equipment: Equipment
+  armorClass: number
+  spellSlots: SpellSlot[]
+  knownSpells: string[]
   tags: string[]
   statusEffects: StatusEffect[]
   gold: number
@@ -27,13 +25,67 @@ export interface Character {
 
 export interface Item {
   name: string
-  type: "weapon" | "armor" | "consumable" | "treasure" | "tool"
+  type: "weapon" | "armor" | "robe" | "helmet" | "hat" | "boots" | "shoes" | "pants" | "greaves" | 
+        "ring" | "necklace" | "amulet" | "cloak" | "cape" | "shield" | 
+        "consumable" | "treasure" | "tool"
   effect?: string
   damage?: number
   healing?: number
+  defense?: number
   value: number
+  weight?: number
+  rarity?: "common" | "uncommon" | "rare" | "epic" | "legendary"
+  magical?: boolean
+  statBonus?: Partial<Stats>
+  temporaryStatBonus?: {
+    duration: number
+  } & Partial<Stats>
+  restoresMana?: number
+  spell?: string
   symbolic?: string
   aiGenerated?: boolean
+}
+
+export interface Equipment {
+  mainHand?: Item
+  offHand?: Item
+  head?: Item
+  body?: Item
+  legs?: Item
+  feet?: Item
+  ring1?: Item
+  ring2?: Item
+  neck?: Item
+  cloak?: Item
+}
+
+export interface Stats {
+  STR: number
+  DEX: number
+  CON: number
+  INT: number
+  WIS: number
+  CHA: number
+}
+
+export interface SpellSlot {
+  level: number
+  total: number
+  used: number
+}
+
+export interface Spell {
+  name: string
+  level: number
+  school: string
+  castingTime: string
+  range: string
+  duration: string
+  description: string
+  damage?: string
+  healing?: string
+  effect?: string
+  classes: string[]
 }
 
 export interface StatusEffect {
@@ -99,15 +151,13 @@ export interface PartyMember {
   maxHp: number
   xp: number
   xpToNext: number
-  stats: {
-    STR: number
-    DEX: number
-    CON: number
-    INT: number
-    WIS: number
-    CHA: number
-  }
+  stats: Stats
+  baseStats: Stats
   inventory: Item[]
+  equipment: Equipment
+  armorClass: number
+  spellSlots: SpellSlot[]
+  knownSpells: string[]
   tags: string[]
   statusEffects: StatusEffect[]
   personalityTraits: string[]

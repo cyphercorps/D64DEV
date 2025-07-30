@@ -54,24 +54,24 @@ export default function Dungeon64() {
     if (gamePhase === "combat" && currentEnemy && currentEnemy.hp > 0 && 
         combatTurnOrder.length > 0 && combatTurnOrder[currentTurnIndex] === "enemy" && 
         !isProcessing) {
-      
+
       const executeEnemyTurn = async () => {
         if (!party) return
-        
+
         setIsProcessing(true)
-        
+
         // Small delay for dramatic effect
         await new Promise(resolve => setTimeout(resolve, 1500))
-        
+
         const aliveMembersInParty = party.members.filter(m => m.hp > 0)
         if (aliveMembersInParty.length === 0) {
           setGamePhase("death")
           setIsProcessing(false)
           return
         }
-        
+
         const randomTarget = aliveMembersInParty[Math.floor(Math.random() * aliveMembersInParty.length)]
-        
+
         // Use the new NPC service for intelligent enemy behavior
         const enemyResult = CombatService.executeEnemyTurn(
           currentEnemy, 
@@ -79,7 +79,7 @@ export default function Dungeon64() {
           currentTurnIndex + 1, 
           addLogEntry
         )
-        
+
         if (enemyResult.action === "flee") {
           addLogEntry(`The ${currentEnemy.name} has fled the battle!`, "narrative")
           setCurrentEnemy(null)
@@ -89,14 +89,14 @@ export default function Dungeon64() {
           setIsProcessing(false)
           return
         }
-        
+
         if (enemyResult.hit && enemyResult.target && enemyResult.damage > 0) {
           const newHp = Math.max(0, enemyResult.target.hp - enemyResult.damage)
           updatePartyMember(enemyResult.target.id, { hp: newHp })
-          
+
           if (newHp <= 0) {
             addLogEntry(`${enemyResult.target.name} has fallen!`, "death")
-            
+
             // Check if all party members are dead
             const aliveMember = party.members.find(m => m.hp > 0)
             if (!aliveMember) {
@@ -106,12 +106,12 @@ export default function Dungeon64() {
             }
           }
         }
-        
+
         // Move to next turn
         setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
         setIsProcessing(false)
       }
-      
+
       executeEnemyTurn()
     }
   }, [gamePhase, currentEnemy, combatTurnOrder, currentTurnIndex, isProcessing, party, updatePartyMember, addLogEntry])
@@ -119,25 +119,26 @@ export default function Dungeon64() {
   const handleCreateCharacter = async (characterData: any) => {
     const { rolledStats, selectedClass, characterName, selectedBackground, characterPortrait, classData, backgroundData } = characterData
 
-    const finalStats = { ...rolledStats }
-
-    // Apply class bonuses
-    Object.entries(classData.bonuses).forEach(([stat, bonus]) => {
-      finalStats[stat as keyof typeof finalStats] += bonus
-    })
-
-    const baseHp = calculateBaseHp(finalStats.CON) + (backgroundData.bonuses.hp || 0)
+    const baseStats = {
+      STR: rolledStats.STR + (classData.bonuses.STR || 0),
+      DEX: rolledStats.DEX + (classData.bonuses.DEX || 0),
+      CON: rolledStats.CON + (classData.bonuses.CON || 0),
+      INT: rolledStats.INT + (classData.bonuses.INT || 0),
+      WIS: rolledStats.WIS + (classData.bonuses.WIS || 0),
+      CHA: rolledStats.CHA + (classData.bonuses.CHA || 0),
+    }
 
     const playerMember: PartyMember = {
       id: "player",
       name: characterName,
       class: selectedClass,
       level: 1,
-      hp: baseHp,
-      maxHp: baseHp,
-      xp: backgroundData.bonuses.xp || 0,
+      hp: 20 + Math.floor((baseStats.CON - 10) / 2),
+      maxHp: 20 + Math.floor((baseStats.CON - 10) / 2),
+      xp: 0,
       xpToNext: 100,
-      stats: finalStats,
+      stats: { ...baseStats },
+      baseStats: { ...baseStats },
       inventory: [
         ...classData.startingItems.map((item: any) => ({ ...item })),
         ...backgroundData.bonuses.items.map((itemName: string) => {
@@ -150,6 +151,25 @@ export default function Dungeon64() {
           return { ...baseItem }
         }),
       ],
+      equipment: {
+        mainHand: undefined,
+        offHand: undefined,
+        head: undefined,
+        body: undefined,
+        legs: undefined,
+        feet: undefined,
+        ring1: undefined,
+        ring2: undefined,
+        neck: undefined,
+        cloak: undefined,
+      },
+      armorClass: 10 + Math.floor((baseStats.DEX - 10) / 2),
+      spellSlots: selectedClass === "Mage" || selectedClass === "Cleric" ? 
+        [{ level: 1, total: 2, used: 0 }] : [],
+      knownSpells: selectedClass === "Mage" ? 
+        ["Light", "Mage Hand", "Magic Missile", "Shield"] : 
+        selectedClass === "Cleric" ? 
+        ["Light", "Sacred Flame", "Cure Light Wounds", "Bless"] : [],
       tags: [...classData.tags, ...backgroundData.tags],
       statusEffects: [],
       personalityTraits: [...classData.traits, ...backgroundData.traits],
@@ -160,7 +180,7 @@ export default function Dungeon64() {
       portrait: characterPortrait,
       joinedAt: Date.now(),
       backstory: backgroundData.startingLore,
-      storyEvents: [],
+      storyEvents: [`Born as ${selectedClass}`, `Background: ${selectedBackground}`],
     }
 
     // Add random symbolic tag
@@ -195,7 +215,7 @@ export default function Dungeon64() {
     if (!member || itemIndex >= member.inventory.length) return
 
     const item = member.inventory[itemIndex]
-    
+
     // Remove from member inventory
     updatePartyMember(fromMemberId, {
       inventory: member.inventory.filter((_, index) => index !== itemIndex)
@@ -217,7 +237,7 @@ export default function Dungeon64() {
     if (!member) return
 
     const item = party.sharedInventory[itemIndex]
-    
+
     // Remove from shared inventory
     setParty(prev => ({
       ...prev!,
@@ -261,7 +281,7 @@ export default function Dungeon64() {
     if (item.healing) {
       const healAmount = item.healing
       const newHp = Math.min(member.maxHp, member.hp + healAmount)
-      
+
       updatePartyMember(memberId, { hp: newHp })
       addLogEntry(`${member.name} uses ${item.name} and recovers ${healAmount} HP!`, "system")
     } else if (item.effect) {
@@ -407,7 +427,7 @@ export default function Dungeon64() {
     // Check for loot
     if (currentRoom.hasLoot && currentRoom.loot && currentRoom.loot.length > 0) {
       const foundLoot = currentRoom.loot.splice(0, 1)[0] // Take one item
-      
+
       // Add to party shared inventory
       setParty(prev => ({
         ...prev!,
@@ -416,7 +436,7 @@ export default function Dungeon64() {
 
       addLogEntry(`You found: ${foundLoot.name}!`, "system")
       addLogEntry(foundLoot.effect || "A mysterious item of unknown purpose.", "narrative")
-      
+
       // If no more loot, mark as searched
       if (currentRoom.loot.length === 0) {
         currentRoom.hasLoot = false
@@ -425,13 +445,13 @@ export default function Dungeon64() {
       // Trap encounter
       const trapDamage = Math.floor(Math.random() * 6) + 1
       const playerMember = getPlayerMember()
-      
+
       if (playerMember) {
         const newHp = Math.max(0, playerMember.hp - trapDamage)
         updatePartyMember(playerMember.id, { hp: newHp })
-        
+
         addLogEntry(`You triggered a trap! ${playerMember.name} takes ${trapDamage} damage!`, "combat")
-        
+
         if (newHp <= 0) {
           addLogEntry(`${playerMember.name} has fallen!`, "death")
           // Check if party is dead
@@ -441,7 +461,7 @@ export default function Dungeon64() {
           }
         }
       }
-      
+
       currentRoom.hasTrap = false // Trap is now disarmed
     } else {
       // Nothing found
@@ -452,10 +472,10 @@ export default function Dungeon64() {
         "The room holds no hidden treasures.",
         "You discover only the marks of those who came before."
       ]
-      
+
       const randomResult = searchResults[Math.floor(Math.random() * searchResults.length)]
       addLogEntry(randomResult, "narrative")
-      
+
       // Small chance to find gold
       if (Math.random() < 0.3) {
         const goldFound = Math.floor(Math.random() * 10) + 1
@@ -492,20 +512,20 @@ export default function Dungeon64() {
     try {
       if (action === "attack") {
         const result = await CombatService.executeAttack(currentMember, currentEnemy, addLogEntry)
-        
+
         if (result.combatEnded) {
           // Victory - award XP and loot
           const xpGained = currentEnemy.xpReward
           party.members.forEach((member) => {
             const newXp = member.xp + Math.floor(xpGained / party.members.length)
             const newLevel = Math.floor(newXp / 100) + 1
-            
+
             updatePartyMember(member.id, {
               xp: newXp,
               level: newLevel,
               storyEvents: [...member.storyEvents, `Defeated ${currentEnemy.name} in combat`],
             })
-            
+
             if (newLevel > member.level) {
               addLogEntry(`${member.name} reached level ${newLevel}!`, "level")
             }
@@ -538,12 +558,12 @@ export default function Dungeon64() {
         if (item.healing) {
           const healAmount = item.healing
           const newHp = Math.min(currentMember.maxHp, currentMember.hp + healAmount)
-          
+
           updatePartyMember(currentMember.id, {
             hp: newHp,
             inventory: currentMember.inventory.filter(i => i !== item)
           })
-          
+
           addLogEntry(`${currentMember.name} uses ${item.name} and recovers ${healAmount} HP!`, "system")
         }
         setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
@@ -737,7 +757,7 @@ export default function Dungeon64() {
                           return currentTurnMember ? currentTurnMember.name : "ENEMY"
                         })()}
                       </div>
-                      
+
                       {(() => {
                         const currentTurnMember = getPartyMember(combatTurnOrder[currentTurnIndex])
                         if (!currentTurnMember) {
@@ -747,7 +767,7 @@ export default function Dungeon64() {
                             </div>
                           )
                         }
-                        
+
                         return (
                           <div className="space-y-2">
                             <Button
@@ -768,7 +788,7 @@ export default function Dungeon64() {
                             >
                               DEFEND
                             </Button>
-                            
+
                             {/* Healing Items */}
                             {currentTurnMember.inventory.filter(item => item.healing).length > 0 && (
                               <div className="border-t border-red-400 pt-2">
@@ -802,7 +822,7 @@ export default function Dungeon64() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-black border-green-400 text-green-400 hover:bg-green-900 text-xs"
+                          className="bg-black border-green-400 text-green-400 hover:bg-green-900 textxs"
                           onClick={() => handleMove("N")}
                           disabled={!currentRoom?.exits.includes("N") || isProcessing}
                         >
