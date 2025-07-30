@@ -38,7 +38,10 @@ export default function InventoryPanel({
   }
 
   const renderItemActions = (item: Item, itemIndex: number, isSharedItem: boolean = false) => {
-    const canUse = item.type === "consumable" || (item.healing && item.healing > 0)
+    const canUseHealing = item.type === "consumable" && (item.healing && item.healing > 0)
+    const canUseAncientTome = item.name.includes("Ancient Tome") && (activeMember.class === "Mage" || activeMember.class === "Cleric")
+    const canUseScroll = item.spell && item.type === "consumable" && !item.name.includes("Ancient Tome")
+    const canUse = canUseHealing || canUseAncientTome || canUseScroll
 
     return (
       <div className="flex gap-1 mt-1">
@@ -57,6 +60,16 @@ export default function InventoryPanel({
             variant="outline"
             className="h-6 px-2 text-xs bg-green-900 text-green-400 hover:bg-green-800 border-green-400"
             onClick={() => onUseItem(activeMember.id, itemIndex, isSharedItem)}
+            disabled={
+              canUseAncientTome && item.spell && activeMember.knownSpells.includes(item.spell)
+            }
+            title={
+              canUseAncientTome && item.spell && activeMember.knownSpells.includes(item.spell)
+                ? "You already know this spell"
+                : canUseAncientTome
+                  ? "Learn this spell"
+                  : "Use item"
+            }
           >
             Use
           </Button>

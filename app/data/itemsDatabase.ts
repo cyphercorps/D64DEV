@@ -147,12 +147,79 @@ export const TOOLS: Item[] = [
   { name: "Crowbar", type: "tool", value: 20, effect: "For prying open doors", rarity: "common", weight: 3 }
 ]
 
+export const ANCIENT_TOMES: Item[] = [
+  {
+    name: "Ancient Tome of Magic Missile",
+    type: "consumable",
+    effect: "Learn the Magic Missile spell",
+    value: 100,
+    rarity: "uncommon",
+    magical: true,
+    spell: "Magic Missile"
+  },
+  {
+    name: "Ancient Tome of Fireball",
+    type: "consumable",
+    effect: "Learn the Fireball spell",
+    value: 300,
+    rarity: "rare",
+    magical: true,
+    spell: "Fireball"
+  },
+  {
+    name: "Ancient Tome of Lightning Bolt",
+    type: "consumable",
+    effect: "Learn the Lightning Bolt spell",
+    value: 300,
+    rarity: "rare",
+    magical: true,
+    spell: "Lightning Bolt"
+  },
+  {
+    name: "Ancient Tome of Shield",
+    type: "consumable",
+    effect: "Learn the Shield spell",
+    value: 150,
+    rarity: "uncommon",
+    magical: true,
+    spell: "Shield"
+  },
+  {
+    name: "Ancient Tome of Cure Light Wounds",
+    type: "consumable",
+    effect: "Learn the Cure Light Wounds spell",
+    value: 120,
+    rarity: "uncommon",
+    magical: true,
+    spell: "Cure Light Wounds"
+  },
+  {
+    name: "Ancient Tome of Bless",
+    type: "consumable",
+    effect: "Learn the Bless spell",
+    value: 120,
+    rarity: "uncommon",
+    magical: true,
+    spell: "Bless"
+  },
+  {
+    name: "Ancient Tome of Cure Serious Wounds",
+    type: "consumable",
+    effect: "Learn the Cure Serious Wounds spell",
+    value: 250,
+    rarity: "rare",
+    magical: true,
+    spell: "Cure Serious Wounds"
+  }
+]
+
 export const ALL_ITEMS: Item[] = [
   ...WEAPONS,
   ...ARMOR,
   ...ACCESSORIES,
   ...CONSUMABLES,
-  ...TOOLS
+  ...TOOLS,
+  ...ANCIENT_TOMES
 ]
 
 export const getItemsByType = (type: string): Item[] => {
