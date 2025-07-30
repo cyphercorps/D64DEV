@@ -15,8 +15,6 @@ export const useGameState = () => {
   const [aiAvailable, setAiAvailable] = useState(true)
   const [combatTurnOrder, setCombatTurnOrder] = useState<string[]>([])
   const [currentTurnIndex, setCurrentTurnIndex] = useState(0)
-  const [isClient, setIsClient] = useState(false)
-
   const addLogEntry = useCallback((text: string, type: LogEntry["type"] = "system") => {
     const newEntry: LogEntry = {
       text,
@@ -101,7 +99,6 @@ export const useGameState = () => {
     aiAvailable,
     combatTurnOrder,
     currentTurnIndex,
-    isClient,
     
     // Setters
     setGamePhase,
@@ -113,7 +110,6 @@ export const useGameState = () => {
     setAiAvailable,
     setCombatTurnOrder,
     setCurrentTurnIndex,
-    setIsClient,
     
     // Helper functions
     addLogEntry,

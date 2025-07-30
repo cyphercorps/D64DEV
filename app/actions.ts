@@ -67,7 +67,9 @@ Format as JSON: {"description": "...", "symbolic": "..."}`
       temperature: 0.8,
     })
 
-    const parsed = JSON.parse(text)
+    // Clean the response by removing markdown code blocks if present
+    const cleanedText = text.replace(/```json\s*|\s*```/g, '').trim()
+    const parsed = JSON.parse(cleanedText)
     return {
       description: parsed.description || "A chamber carved from living stone, its walls bearing the weight of ages.",
       symbolic: parsed.symbolic || "The darkness watches and remembers.",
@@ -138,7 +140,9 @@ Create an enemy appropriate for this depth and room type. Format as JSON:
       temperature: 0.8,
     })
 
-    const parsed = JSON.parse(text)
+    // Clean the response by removing markdown code blocks if present
+    const cleanedText = text.replace(/```json\s*|\s*```/g, '').trim()
+    const parsed = JSON.parse(cleanedText)
     return {
       name: parsed.name || "Shadow Wraith",
       hp: parsed.hp || 8 + depth * 2,

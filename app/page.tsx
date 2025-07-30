@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -10,10 +9,9 @@ import { DungeonService } from "./services/dungeonService"
 import { CombatService } from "./services/combatService"
 import { calculateBaseHp } from "./utils/gameUtils"
 import { LOOT_ITEMS, RECRUITABLE_NPCS } from "./data/gameData"
+import CharacterCreation from "./components/CharacterCreation"
+import PartyPanel from "./components/PartyPanel"
 import { PartyMember, Party, Room, CombatTurn } from "./types/game"
-
-const CharacterCreation = dynamic(() => import("./components/CharacterCreation"), { ssr: false })
-const PartyPanel = dynamic(() => import("./components/PartyPanel"), { ssr: false })
 
 export default function Dungeon64() {
   const {
@@ -27,7 +25,6 @@ export default function Dungeon64() {
     aiAvailable,
     combatTurnOrder,
     currentTurnIndex,
-    isClient,
     setGamePhase,
     setParty,
     setActivePartyMember,
@@ -36,7 +33,6 @@ export default function Dungeon64() {
     setIsProcessing,
     setCombatTurnOrder,
     setCurrentTurnIndex,
-    setIsClient,
     addLogEntry,
     getPartyMember,
     getPlayerMember,
@@ -46,10 +42,6 @@ export default function Dungeon64() {
   } = useGameState()
 
   const logEndRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [setIsClient])
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -257,22 +249,6 @@ export default function Dungeon64() {
       </Card>
     </div>
   )
-
-  // Show loading state while components are being loaded
-  if (!isClient) {
-    return (
-      <div className="min-h-screen bg-black text-green-400 font-mono p-2 sm:p-4 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-400 mb-2 tracking-wider break-words">
-            ░▒▓ DUNGEON64 ▓▒░
-          </h1>
-          <p className="text-xs sm:text-sm text-green-300 opacity-75 break-words px-2">
-            LOADING...
-          </p>
-        </div>
-      </div>
-    )
-  }
 
   // Main Render
   if (gamePhase === "character-creation") {
