@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Button } from "@/components/ui/button"
@@ -47,7 +46,7 @@ export default function CharacterCreation({ onCharacterCreated, addLogEntry, isC
 
     const classData = CLASSES.find((c) => c.name === selectedClass)!
     const backgroundData = BACKGROUNDS.find((b) => b.name === selectedBackground)!
-    
+
     onCharacterCreated({
       rolledStats,
       selectedClass,
@@ -56,7 +55,6 @@ export default function CharacterCreation({ onCharacterCreated, addLogEntry, isC
       characterPortrait,
       classData,
       backgroundData,
-      isClient,
     })
   }
 

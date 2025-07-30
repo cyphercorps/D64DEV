@@ -54,7 +54,7 @@ export default function Dungeon64() {
   }, [log])
 
   const handleCreateCharacter = async (characterData: any) => {
-    const { rolledStats, selectedClass, characterName, selectedBackground, characterPortrait, classData, backgroundData, isClient } = characterData
+    const { rolledStats, selectedClass, characterName, selectedBackground, characterPortrait, classData, backgroundData } = characterData
 
     const finalStats = { ...rolledStats }
 
@@ -100,11 +100,9 @@ export default function Dungeon64() {
       storyEvents: [],
     }
 
-    // Add random symbolic tag (only on client to prevent hydration mismatch)
-    if (isClient) {
-      const symbolicTags = ["Cursed", "Blessed", "Witness", "Marked", "Chosen", "Forsaken", "Haunted"]
-      playerMember.tags.push(symbolicTags[Math.floor(Math.random() * symbolicTags.length)])
-    }
+    // Add random symbolic tag
+    const symbolicTags = ["Cursed", "Blessed", "Witness", "Marked", "Chosen", "Forsaken", "Haunted"]
+    playerMember.tags.push(symbolicTags[Math.floor(Math.random() * symbolicTags.length)])
 
     const newParty: Party = {
       members: [playerMember],
@@ -260,18 +258,7 @@ export default function Dungeon64() {
 
   // Prevent hydration mismatch by not rendering until client is ready
   if (!isClient) {
-    return (
-      <div className="min-h-screen bg-black text-green-400 font-mono p-2 sm:p-4 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-400 mb-2 tracking-wider break-words">
-            ░▒▓ DUNGEON64 ▓▒░
-          </h1>
-          <p className="text-xs sm:text-sm text-green-300 opacity-75 break-words px-2">
-            LOADING...
-          </p>
-        </div>
-      </div>
-    )
+    return null
   }
 
   // Main Render
