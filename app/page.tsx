@@ -764,8 +764,6 @@ export default function Dungeon64() {
     </div>
   )
 
-  const getPlayerMember = () => party?.members.find(m => m.playerCharacter) || null
-
   const enhanceItemWithLore = async (item: any, context?: string): Promise<any> => {
     if (!item.symbolic && aiAvailable && !isProcessing) {
       try {
