@@ -48,6 +48,59 @@ export default function Dungeon64() {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [log])
 
+  // Auto-execute enemy turns
+  useEffect(() => {
+    if (gamePhase === "combat" && currentEnemy && currentEnemy.hp > 0 && 
+        combatTurnOrder.length > 0 && combatTurnOrder[currentTurnIndex] === "enemy" && 
+        !isProcessing) {
+      
+      const executeEnemyTurn = async () => {
+        if (!party) return
+        
+        setIsProcessing(true)
+        
+        // Small delay for dramatic effect
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        
+        const aliveMembersInParty = party.members.filter(m => m.hp > 0)
+        if (aliveMembersInParty.length === 0) {
+          setGamePhase("death")
+          setIsProcessing(false)
+          return
+        }
+        
+        const randomTarget = aliveMembersInParty[Math.floor(Math.random() * aliveMembersInParty.length)]
+        
+        if (randomTarget) {
+          const enemyResult = CombatService.executeEnemyAttack(currentEnemy, randomTarget, addLogEntry)
+          
+          if (enemyResult.hit) {
+            const newHp = Math.max(0, randomTarget.hp - enemyResult.damage)
+            updatePartyMember(randomTarget.id, { hp: newHp })
+            
+            if (newHp <= 0) {
+              addLogEntry(`${randomTarget.name} has fallen!`, "death")
+              
+              // Check if all party members are dead
+              const aliveMember = party.members.find(m => m.hp > 0)
+              if (!aliveMember) {
+                setGamePhase("death")
+                setIsProcessing(false)
+                return
+              }
+            }
+          }
+        }
+        
+        // Move to next turn
+        setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
+        setIsProcessing(false)
+      }
+      
+      executeEnemyTurn()
+    }
+  }, [gamePhase, currentEnemy, combatTurnOrder, currentTurnIndex, isProcessing, party, updatePartyMember, addLogEntry])
+
   const handleCreateCharacter = async (characterData: any) => {
     const { rolledStats, selectedClass, characterName, selectedBackground, characterPortrait, classData, backgroundData } = characterData
 
@@ -478,33 +531,6 @@ export default function Dungeon64() {
           
           addLogEntry(`${currentMember.name} uses ${item.name} and recovers ${healAmount} HP!`, "system")
         }
-        setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
-      }
-
-      // Enemy turn if combat continues
-      if (currentEnemy && currentEnemy.hp > 0 && combatTurnOrder[currentTurnIndex] === "enemy") {
-        const randomTarget = party.members.filter(m => m.hp > 0)[Math.floor(Math.random() * party.members.filter(m => m.hp > 0).length)]
-        
-        if (randomTarget) {
-          const enemyResult = CombatService.executeEnemyAttack(currentEnemy, randomTarget, addLogEntry)
-          
-          if (enemyResult.hit) {
-            const newHp = Math.max(0, randomTarget.hp - enemyResult.damage)
-            updatePartyMember(randomTarget.id, { hp: newHp })
-            
-            if (newHp <= 0) {
-              addLogEntry(`${randomTarget.name} has fallen!`, "death")
-              
-              // Check if all party members are dead
-              const aliveMember = party.members.find(m => m.hp > 0)
-              if (!aliveMember) {
-                setGamePhase("death")
-                return
-              }
-            }
-          }
-        }
-        
         setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
       }
     } catch (error) {
