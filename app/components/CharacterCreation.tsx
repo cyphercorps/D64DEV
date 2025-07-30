@@ -9,10 +9,9 @@ import { CLASSES, BACKGROUNDS, STAT_ARRAYS, PORTRAITS } from "../data/gameData"
 interface CharacterCreationProps {
   onCharacterCreated: (characterData: any) => void
   addLogEntry: (text: string, type?: string) => void
-  isClient: boolean
 }
 
-export default function CharacterCreation({ onCharacterCreated, addLogEntry, isClient }: CharacterCreationProps) {
+export default function CharacterCreation({ onCharacterCreated, addLogEntry }: CharacterCreationProps) {
   const {
     rolledStats,
     selectedClass,
@@ -58,15 +57,7 @@ export default function CharacterCreation({ onCharacterCreated, addLogEntry, isC
     })
   }
 
-  if (!isClient) {
-    return (
-      <div className="w-full max-w-6xl mx-auto px-2 sm:px-4">
-        <Card className="bg-gray-900 border-green-400 border-2 p-3 sm:p-4 lg:p-6 w-full">
-          <div className="text-center text-green-400">Loading character creation...</div>
-        </Card>
-      </div>
-    )
-  }
+  
 
   return (
     <div className="w-full max-w-6xl mx-auto px-2 sm:px-4">
