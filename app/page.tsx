@@ -417,6 +417,7 @@ export default function Dungeon64() {
   const [combatTurnOrder, setCombatTurnOrder] = useState<string[]>([])
   const [currentTurnIndex, setCurrentTurnIndex] = useState(0)
   const [combatActions, setCombatActions] = useState<CombatTurn[]>([])
+  const [isClient, setIsClient] = useState(false)
 
   // Character Creation State - MOVED INSIDE COMPONENT
   const [rolledStats, setRolledStats] = useState<Character["stats"] | null>(null)
@@ -464,16 +465,19 @@ export default function Dungeon64() {
   }
 
   const generateRoom = async (depth: number, index: number): Promise<Room> => {
-    const template = ROOM_TEMPLATES[Math.floor(Math.random() * ROOM_TEMPLATES.length)]
-    const hasLoot = Math.random() < 0.3 + depth * 0.1
-    const hasTrap = Math.random() < 0.2 + depth * 0.05
-    const hasEnemy = Math.random() < 0.4 + depth * 0.1
+    // Use deterministic values based on depth and index to prevent hydration mismatch
+    const templateIndex = (depth + index) % ROOM_TEMPLATES.length
+    const template = ROOM_TEMPLATES[templateIndex]
+    const hasLoot = ((depth + index) % 10) < (3 + depth)
+    const hasTrap = ((depth + index * 2) % 10) < (2 + Math.floor(depth * 0.5))
+    const hasEnemy = ((depth + index * 3) % 10) < (4 + depth)
 
     const loot: Item[] = []
     if (hasLoot) {
-      const lootCount = Math.random() < 0.7 ? 1 : 2
+      const lootCount = ((depth + index) % 10) < 7 ? 1 : 2
       for (let i = 0; i < lootCount; i++) {
-        const baseItem = LOOT_ITEMS[Math.floor(Math.random() * LOOT_ITEMS.length)]
+        const itemIndex = (depth + index + i) % LOOT_ITEMS.length
+        const baseItem = LOOT_ITEMS[itemIndex]
         const item = { ...baseItem }
         loot.push(item)
       }
@@ -611,13 +615,15 @@ export default function Dungeon64() {
       storyEvents: [],
     }
 
-    // Add random symbolic tag
-    const symbolicTags = ["Cursed", "Blessed", "Witness", "Marked", "Chosen", "Forsaken", "Haunted"]
-    playerMember.tags.push(symbolicTags[Math.floor(Math.random() * symbolicTags.length)])
+    // Add random symbolic tag (only on client to prevent hydration mismatch)
+    if (isClient) {
+      const symbolicTags = ["Cursed", "Blessed", "Witness", "Marked", "Chosen", "Forsaken", "Haunted"]
+      playerMember.tags.push(symbolicTags[Math.floor(Math.random() * symbolicTags.length)])
+    }
 
     const newParty: Party = {
       members: [playerMember],
-      sharedGold: rollDice(6, 3) * 10 + (backgroundData.bonuses.gold || 0),
+      sharedGold: 100 + (backgroundData.bonuses.gold || 0), // Fixed value to prevent hydration mismatch
       sharedInventory: [],
       formation: ["player"],
       morale: 75,
@@ -1901,6 +1907,10 @@ export default function Dungeon64() {
 
   // Effects
   useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [log])
 
@@ -1987,6 +1997,22 @@ export default function Dungeon64() {
 
   const getCurrentRoom = () => {
     return dungeon?.rooms.get(dungeon.currentRoomId)
+  }
+
+  // Prevent hydration mismatch by not rendering until client is ready
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-black text-green-400 font-mono p-2 sm:p-4 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-400 mb-2 tracking-wider break-words">
+            ░▒▓ DUNGEON64 ▓▒░
+          </h1>
+          <p className="text-xs sm:text-sm text-green-300 opacity-75 break-words px-2">
+            LOADING...
+          </p>
+        </div>
+      </div>
+    )
   }
 
   // Main Render
