@@ -119,6 +119,50 @@ export default function Dungeon64() {
     addLogEntry("The narrator awakens, ready to weave your tale...", "ai")
   }
 
+  const transferItemToShared = (fromMemberId: string, itemIndex: number) => {
+    if (!party) return
+
+    const member = party.members.find(m => m.id === fromMemberId)
+    if (!member || itemIndex >= member.inventory.length) return
+
+    const item = member.inventory[itemIndex]
+    
+    // Remove from member inventory
+    updatePartyMember(fromMemberId, {
+      inventory: member.inventory.filter((_, index) => index !== itemIndex)
+    })
+
+    // Add to shared inventory
+    setParty(prev => ({
+      ...prev!,
+      sharedInventory: [...prev!.sharedInventory, item]
+    }))
+
+    addLogEntry(`${member.name} moved ${item.name} to shared inventory.`, "system")
+  }
+
+  const transferItemFromShared = (toMemberId: string, itemIndex: number) => {
+    if (!party || itemIndex >= party.sharedInventory.length) return
+
+    const member = party.members.find(m => m.id === toMemberId)
+    if (!member) return
+
+    const item = party.sharedInventory[itemIndex]
+    
+    // Remove from shared inventory
+    setParty(prev => ({
+      ...prev!,
+      sharedInventory: prev!.sharedInventory.filter((_, index) => index !== itemIndex)
+    }))
+
+    // Add to member inventory
+    updatePartyMember(toMemberId, {
+      inventory: [...member.inventory, item]
+    })
+
+    addLogEntry(`${member.name} took ${item.name} from shared inventory.`, "system")
+  }
+
   const handleRecruitment = (npcData: typeof RECRUITABLE_NPCS[0]) => {
     if (!party || party.sharedGold < npcData.recruitmentCost) {
       addLogEntry("You lack the gold to recruit this companion.", "system")
@@ -398,6 +442,8 @@ export default function Dungeon64() {
                 setActivePartyMember={setActivePartyMember}
                 onRecruitment={handleRecruitment}
                 gamePhase={gamePhase}
+                onTransferItemToShared={transferItemToShared}
+                onTransferItemFromShared={transferItemFromShared}
               />
             )}
           </div>

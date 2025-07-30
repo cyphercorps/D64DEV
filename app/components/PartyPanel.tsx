@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Button } from "@/components/ui/button"
@@ -13,6 +12,7 @@ interface PartyPanelProps {
   setActivePartyMember: (id: string) => void
   onRecruitment: (npcData: any) => void
   gamePhase: string
+  onTransferItemToShared?: (memberId: string, itemIndex: number) => void
 }
 
 export default function PartyPanel({
@@ -21,6 +21,7 @@ export default function PartyPanel({
   setActivePartyMember,
   onRecruitment,
   gamePhase,
+  onTransferItemToShared,
 }: PartyPanelProps) {
   return (
     <Card className="bg-gray-900 border-green-400 border-2 h-full p-4">
@@ -62,7 +63,7 @@ export default function PartyPanel({
                 </div>
               </div>
 
-              <div className="text-xs space-y-1">
+              <div className="space-y-1">
                 <div
                   className={`break-words ${
                     member.hp <= 0
@@ -80,6 +81,36 @@ export default function PartyPanel({
                 {!member.isPlayer && (
                   <div className="text-purple-400 break-words">Loyalty: {member.loyalty}/100</div>
                 )}
+
+                {/* Individual Inventory */}
+                <div className="mt-2 pt-2 border-t border-gray-600">
+                  <div className="text-xs text-cyan-400 font-bold mb-1 break-words">
+                    INVENTORY ({member.inventory.length})
+                  </div>
+                  {member.inventory.length > 0 ? (
+                    <div className="space-y-1 max-h-20 overflow-y-auto">
+                      {member.inventory.map((item, index) => (
+                        <div key={index} className="text-xs text-gray-300 break-words">
+                          <div className="flex justify-between items-center">
+                            <span className="truncate">{item.name}</span>
+                            <span className="text-yellow-400 ml-1">{item.value}g</span>
+                          </div>
+                          {onTransferItemToShared && activePartyMember === member.id && (
+                            <Button
+                              onClick={() => onTransferItemToShared(member.id, index)}
+                              size="sm"
+                              className="h-4 px-1 text-xs mt-1 bg-green-900 text-green-400 hover:bg-green-800"
+                            >
+                              Share
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-500 italic">Empty</div>
+                  )}
+                </div>
               </div>
 
               {/* Status Effects */}
