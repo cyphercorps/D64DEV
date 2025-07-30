@@ -1,8 +1,9 @@
 
-import { PartyMember, Enemy, CombatTurn } from "../types/game"
+import { PartyMember, Enemy, CombatTurn, Party } from "../types/game"
 import { rollDice } from "../utils/dice"
 import { calculateStatModifier } from "../utils/gameUtils"
 import { generateAICombatNarrative } from "../actions"
+import { NPCService } from "./npcService"
 
 export class CombatService {
   static initiateCombat(party: { formation: string[] }, enemy: Enemy): string[] {
@@ -58,6 +59,40 @@ export class CombatService {
     }
   }
 
+  static executeEnemyTurn(
+    enemy: Enemy,
+    party: Party,
+    turnCount: number,
+    addLogEntry: (text: string, type?: string) => void
+  ): { damage: number; hit: boolean; target?: PartyMember; action: string } {
+    const enemyAction = NPCService.determineEnemyAction(enemy, party, turnCount, addLogEntry)
+    
+    if (enemyAction.action === "flee") {
+      return { damage: 0, hit: false, action: "flee" }
+    }
+    
+    if (enemyAction.action === "defend") {
+      addLogEntry(`The ${enemy.name} takes a defensive stance!`, "combat")
+      return { damage: 0, hit: false, action: "defend" }
+    }
+    
+    if (!enemyAction.target) {
+      addLogEntry(`The ${enemy.name} looks around confused!`, "combat")
+      return { damage: 0, hit: false, action: "wait" }
+    }
+    
+    const damage = enemyAction.damage || 0
+    
+    if (damage > 0) {
+      addLogEntry(`The ${enemy.name} hits ${enemyAction.target.name} for ${damage} damage!`, "combat")
+      return { damage, hit: true, target: enemyAction.target, action: enemyAction.action }
+    } else {
+      addLogEntry(`The ${enemy.name} misses ${enemyAction.target.name}!`, "combat")
+      return { damage: 0, hit: false, target: enemyAction.target, action: enemyAction.action }
+    }
+  }
+
+  // Keep the old method for backwards compatibility but mark as deprecated
   static executeEnemyAttack(
     enemy: Enemy,
     target: PartyMember,
@@ -76,46 +111,12 @@ export class CombatService {
     }
   }
 
-  static executePartyMemberAI(member: PartyMember, enemy: Enemy, party: { members: PartyMember[] }): CombatTurn {
-    let action: CombatTurn["action"] = "attack"
-    let target = "enemy"
-
-    switch (member.combatAI) {
-      case "support":
-        const injuredMember = party.members.find((m) => m.hp < m.maxHp * 0.5)
-        if (injuredMember && member.inventory.some((item) => item.healing)) {
-          action = "use_item"
-          target = injuredMember.id
-        }
-        break
-
-      case "defensive":
-        if (member.hp < member.maxHp * 0.3) {
-          action = "defend"
-        }
-        break
-
-      case "aggressive":
-        action = "attack"
-        break
-
-      case "balanced":
-        if (member.hp < member.maxHp * 0.2) {
-          action = "defend"
-        } else if (party.members.some((m) => m.hp < m.maxHp * 0.3)) {
-          const healingItem = member.inventory.find((item) => item.healing)
-          if (healingItem) {
-            action = "use_item"
-            target = party.members.find((m) => m.hp < m.maxHp * 0.3)?.id || "enemy"
-          }
-        }
-        break
-    }
-
-    return {
-      memberId: member.id,
-      action,
-      target,
-    }
+  static executePartyMemberAI(
+    member: PartyMember, 
+    enemy: Enemy, 
+    party: Party,
+    addLogEntry: (text: string, type?: string) => void
+  ): CombatTurn {
+    return NPCService.executeAllyAI(member, enemy, party, addLogEntry)
   }
 }

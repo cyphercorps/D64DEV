@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useGameState } from "./hooks/useGameState"
 import { DungeonService } from "./services/dungeonService"
 import { CombatService } from "./services/combatService"
+import { NPCService } from "./services/npcService"
 import { calculateBaseHp } from "./utils/gameUtils"
 import { LOOT_ITEMS, RECRUITABLE_NPCS } from "./data/gameData"
 import CharacterCreation from "./components/CharacterCreation"
@@ -71,23 +72,37 @@ export default function Dungeon64() {
         
         const randomTarget = aliveMembersInParty[Math.floor(Math.random() * aliveMembersInParty.length)]
         
-        if (randomTarget) {
-          const enemyResult = CombatService.executeEnemyAttack(currentEnemy, randomTarget, addLogEntry)
+        // Use the new NPC service for intelligent enemy behavior
+        const enemyResult = CombatService.executeEnemyTurn(
+          currentEnemy, 
+          party, 
+          currentTurnIndex + 1, 
+          addLogEntry
+        )
+        
+        if (enemyResult.action === "flee") {
+          addLogEntry(`The ${currentEnemy.name} has fled the battle!`, "narrative")
+          setCurrentEnemy(null)
+          setCombatTurnOrder([])
+          setCurrentTurnIndex(0)
+          setGamePhase("dungeon")
+          setIsProcessing(false)
+          return
+        }
+        
+        if (enemyResult.hit && enemyResult.target && enemyResult.damage > 0) {
+          const newHp = Math.max(0, enemyResult.target.hp - enemyResult.damage)
+          updatePartyMember(enemyResult.target.id, { hp: newHp })
           
-          if (enemyResult.hit) {
-            const newHp = Math.max(0, randomTarget.hp - enemyResult.damage)
-            updatePartyMember(randomTarget.id, { hp: newHp })
+          if (newHp <= 0) {
+            addLogEntry(`${enemyResult.target.name} has fallen!`, "death")
             
-            if (newHp <= 0) {
-              addLogEntry(`${randomTarget.name} has fallen!`, "death")
-              
-              // Check if all party members are dead
-              const aliveMember = party.members.find(m => m.hp > 0)
-              if (!aliveMember) {
-                setGamePhase("death")
-                setIsProcessing(false)
-                return
-              }
+            // Check if all party members are dead
+            const aliveMember = party.members.find(m => m.hp > 0)
+            if (!aliveMember) {
+              setGamePhase("death")
+              setIsProcessing(false)
+              return
             }
           }
         }
