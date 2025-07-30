@@ -151,65 +151,72 @@ export const ANCIENT_TOMES: Item[] = [
   {
     name: "Ancient Tome of Magic Missile",
     type: "consumable",
-    effect: "Learn the Magic Missile spell",
+    effect: "Learn Magic Missile (1st level): Creates 3 darts of magical force that strike unerringly for 3d4+3 damage. A classic evocation spell favored by battle mages.",
     value: 100,
     rarity: "uncommon",
     magical: true,
-    spell: "Magic Missile"
+    spell: "Magic Missile",
+    symbolic: "Bound in midnight blue leather with silver clasps, this tome hums with arcane energy. The pages whisper secrets of force and precision."
   },
   {
     name: "Ancient Tome of Fireball",
     type: "consumable",
-    effect: "Learn the Fireball spell",
+    effect: "Learn Fireball (3rd level): A bright flash then a roar of flame engulfs a 20-foot radius for 8d6 fire damage. The signature spell of destruction mages.",
     value: 300,
     rarity: "rare",
     magical: true,
-    spell: "Fireball"
+    spell: "Fireball",
+    symbolic: "This crimson tome radiates warmth, its pages edged in gold. Ancient burn marks on the cover hint at the devastating power contained within."
   },
   {
     name: "Ancient Tome of Lightning Bolt",
     type: "consumable",
-    effect: "Learn the Lightning Bolt spell",
+    effect: "Learn Lightning Bolt (3rd level): A stroke of lightning forms a 100-foot line dealing 8d6 electrical damage. The storm mage's favored weapon.",
     value: 300,
     rarity: "rare",
     magical: true,
-    spell: "Lightning Bolt"
+    spell: "Lightning Bolt",
+    symbolic: "Crackling with static energy, this storm-grey tome seems to pulse with an inner light. Thunder rumbles softly when opened."
   },
   {
     name: "Ancient Tome of Shield",
     type: "consumable",
-    effect: "Learn the Shield spell",
+    effect: "Learn Shield (1st level): Grants +5 AC until start of next turn as a reaction. An essential protective spell for any spellcaster.",
     value: 150,
     rarity: "uncommon",
     magical: true,
-    spell: "Shield"
+    spell: "Shield",
+    symbolic: "Bound in gleaming white leather with protective wards etched into every page. A faint shimmer surrounds those who read its contents."
   },
   {
     name: "Ancient Tome of Cure Light Wounds",
     type: "consumable",
-    effect: "Learn the Cure Light Wounds spell",
+    effect: "Learn Cure Light Wounds (1st level): Heals 1d8+3 HP with divine magic. The foundation of all healing arts used by clerics and paladins.",
     value: 120,
     rarity: "uncommon",
     magical: true,
-    spell: "Cure Light Wounds"
+    spell: "Cure Light Wounds",
+    symbolic: "This holy tome glows with soft golden light, its pages inscribed with prayers in celestial script. It emanates peace and comfort."
   },
   {
     name: "Ancient Tome of Bless",
     type: "consumable",
-    effect: "Learn the Bless spell",
+    effect: "Learn Bless (1st level): Blesses up to 3 creatures, granting +1d4 to attack rolls and saves for 1 minute. Divine favor made manifest.",
     value: 120,
     rarity: "uncommon",
     magical: true,
-    spell: "Bless"
+    spell: "Bless",
+    symbolic: "Adorned with silver holy symbols, this blessed tome radiates divine grace. Those who touch it feel momentarily uplifted and protected."
   },
   {
     name: "Ancient Tome of Cure Serious Wounds",
     type: "consumable",
-    effect: "Learn the Cure Serious Wounds spell",
+    effect: "Learn Cure Serious Wounds (3rd level): Heals 3d8+7 HP with powerful divine magic. Advanced healing techniques known only to experienced clerics.",
     value: 250,
     rarity: "rare",
     magical: true,
-    spell: "Cure Serious Wounds"
+    spell: "Cure Serious Wounds",
+    symbolic: "This sacred tome pulses with divine energy, its platinum bindings inscribed with the names of ancient saints. Miracles await within."
   }
 ]
 

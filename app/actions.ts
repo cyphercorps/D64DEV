@@ -105,12 +105,40 @@ Write a single dramatic sentence (15-25 words) describing this combat moment. Fo
       temperature: 0.9,
     })
 
-    return text.trim()
+    return text.trim().replace(/[.!?]*$/, '') + "."
   } catch (error) {
     console.error("AI combat narrative failed:", error)
-    return result.hit
-      ? `${character.name}'s strike finds its mark for ${result.damage} damage!`
-      : `${character.name}'s attack misses!`
+    return `${character.name} strikes with deadly precision.`
+  }
+}
+
+export async function generateAIItemLore(item: Item, context?: string) {
+  try {
+    const prompt = `You are a fantasy item chronicler writing lore for a D&D-style dungeon crawler. Create atmospheric backstory for this item:
+
+Item Name: ${item.name}
+Type: ${item.type}
+Rarity: ${item.rarity || "common"}
+Effect: ${item.effect || "No special effect"}
+${item.damage ? `Damage: ${item.damage}` : ""}
+${item.healing ? `Healing: ${item.healing}` : ""}
+${item.magical ? "This item is magical" : ""}
+${context ? `Context: ${context}` : ""}
+
+Write 1-2 sentences of evocative backstory or lore that describes the item's history, origin, or mystical properties. Focus on atmosphere and mystery. Make it feel ancient and meaningful.
+
+Return only the lore text, no quotes or formatting.`
+
+    const { text } = await generateText({
+      model: openai("gpt-4o"),
+      prompt,
+      temperature: 0.8,
+    })
+
+    return text.trim()
+  } catch (error) {
+    console.error("AI item lore generation failed:", error)
+    return "Ancient legends speak of this item's mysterious origins."
   }
 }
 
