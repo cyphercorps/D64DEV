@@ -1,4 +1,3 @@
-
 export type GamePhase = "character-creation" | "dungeon" | "combat" | "death" | "victory"
 
 export interface Character {

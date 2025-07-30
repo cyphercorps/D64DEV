@@ -226,6 +226,90 @@ export default function Dungeon64() {
     setIsProcessing(false)
   }
 
+  const handleSearch = async () => {
+    if (!dungeon || !party || isProcessing) return
+
+    const currentRoom = dungeon.rooms.get(dungeon.currentRoomId)!
+    setIsProcessing(true)
+
+    addLogEntry("You search the room carefully...", "system")
+
+    // Simulate search time
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Check for loot
+    if (currentRoom.hasLoot && currentRoom.loot && currentRoom.loot.length > 0) {
+      const foundLoot = currentRoom.loot.splice(0, 1)[0] // Take one item
+      
+      // Add to party shared inventory
+      setParty(prev => ({
+        ...prev!,
+        sharedInventory: [...prev!.sharedInventory, foundLoot]
+      }))
+
+      addLogEntry(`You found: ${foundLoot.name}!`, "system")
+      addLogEntry(foundLoot.effect || "A mysterious item of unknown purpose.", "narrative")
+      
+      // If no more loot, mark as searched
+      if (currentRoom.loot.length === 0) {
+        currentRoom.hasLoot = false
+      }
+    } else if (currentRoom.hasTrap) {
+      // Trap encounter
+      const trapDamage = Math.floor(Math.random() * 6) + 1
+      const playerMember = getPlayerMember()
+      
+      if (playerMember) {
+        const newHp = Math.max(0, playerMember.hp - trapDamage)
+        updatePartyMember(playerMember.id, { hp: newHp })
+        
+        addLogEntry(`You triggered a trap! ${playerMember.name} takes ${trapDamage} damage!`, "combat")
+        
+        if (newHp <= 0) {
+          addLogEntry(`${playerMember.name} has fallen!`, "death")
+          // Check if party is dead
+          const aliveMember = party.members.find(m => m.hp > 0)
+          if (!aliveMember) {
+            setGamePhase("death")
+          }
+        }
+      }
+      
+      currentRoom.hasTrap = false // Trap is now disarmed
+    } else {
+      // Nothing found
+      const searchResults = [
+        "You find nothing of interest.",
+        "The shadows yield no secrets.",
+        "Your search reveals only dust and echoes.",
+        "The room holds no hidden treasures.",
+        "You discover only the marks of those who came before."
+      ]
+      
+      const randomResult = searchResults[Math.floor(Math.random() * searchResults.length)]
+      addLogEntry(randomResult, "narrative")
+      
+      // Small chance to find gold
+      if (Math.random() < 0.3) {
+        const goldFound = Math.floor(Math.random() * 10) + 1
+        setParty(prev => ({
+          ...prev!,
+          sharedGold: prev!.sharedGold + goldFound
+        }))
+        addLogEntry(`You found ${goldFound} gold pieces hidden in a crevice.`, "system")
+      }
+    }
+
+    // Update character story
+    party.members.forEach((member) => {
+      updatePartyMember(member.id, {
+        storyEvents: [...member.storyEvents, `Searched ${currentRoom.roomType} at depth ${dungeon.depth}`],
+      })
+    })
+
+    setIsProcessing(false)
+  }
+
   const getCurrentRoom = (): Room | undefined => {
     return dungeon?.rooms.get(dungeon.currentRoomId)
   }
@@ -459,6 +543,7 @@ export default function Dungeon64() {
                           size="sm"
                           className="w-full bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900 text-xs"
                           disabled={isProcessing}
+                          onClick={handleSearch}
                         >
                           {isProcessing ? "SEARCHING..." : "SEARCH"}
                         </Button>
