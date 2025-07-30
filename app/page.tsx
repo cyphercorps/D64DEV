@@ -358,6 +358,108 @@ export default function Dungeon64() {
     return dungeon?.rooms.get(dungeon.currentRoomId)
   }
 
+  const handleCombatAction = async (action: string, target?: string, item?: any) => {
+    if (!currentEnemy || !party || isProcessing) return
+
+    const currentMember = getPartyMember(combatTurnOrder[currentTurnIndex])
+    if (!currentMember) return
+
+    setIsProcessing(true)
+
+    try {
+      if (action === "attack") {
+        const result = await CombatService.executeAttack(currentMember, currentEnemy, addLogEntry)
+        
+        if (result.combatEnded) {
+          // Victory - award XP and loot
+          const xpGained = currentEnemy.xpReward
+          party.members.forEach((member) => {
+            const newXp = member.xp + Math.floor(xpGained / party.members.length)
+            const newLevel = Math.floor(newXp / 100) + 1
+            
+            updatePartyMember(member.id, {
+              xp: newXp,
+              level: newLevel,
+              storyEvents: [...member.storyEvents, `Defeated ${currentEnemy.name} in combat`],
+            })
+            
+            if (newLevel > member.level) {
+              addLogEntry(`${member.name} reached level ${newLevel}!`, "level")
+            }
+          })
+
+          // Add enemy loot to shared inventory
+          if (currentEnemy.loot) {
+            setParty(prev => ({
+              ...prev!,
+              sharedInventory: [...prev!.sharedInventory, ...currentEnemy.loot!]
+            }))
+            addLogEntry(`Found: ${currentEnemy.loot.map(item => item.name).join(", ")}`, "system")
+          }
+
+          setCurrentEnemy(null)
+          setCombatTurnOrder([])
+          setCurrentTurnIndex(0)
+          setGamePhase("dungeon")
+        } else {
+          setCurrentEnemy(prev => ({ ...prev!, hp: result.enemyHp }))
+          // Move to next turn
+          setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
+        }
+      } else if (action === "defend") {
+        addLogEntry(`${currentMember.name} takes a defensive stance.`, "combat")
+        // TODO: Add defense bonus logic
+        setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
+      } else if (action === "use_item" && item) {
+        // Use healing item
+        if (item.healing) {
+          const healAmount = item.healing
+          const newHp = Math.min(currentMember.maxHp, currentMember.hp + healAmount)
+          
+          updatePartyMember(currentMember.id, {
+            hp: newHp,
+            inventory: currentMember.inventory.filter(i => i !== item)
+          })
+          
+          addLogEntry(`${currentMember.name} uses ${item.name} and recovers ${healAmount} HP!`, "system")
+        }
+        setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
+      }
+
+      // Enemy turn if combat continues
+      if (currentEnemy && currentEnemy.hp > 0 && combatTurnOrder[currentTurnIndex] === "enemy") {
+        const randomTarget = party.members.filter(m => m.hp > 0)[Math.floor(Math.random() * party.members.filter(m => m.hp > 0).length)]
+        
+        if (randomTarget) {
+          const enemyResult = CombatService.executeEnemyAttack(currentEnemy, randomTarget, addLogEntry)
+          
+          if (enemyResult.hit) {
+            const newHp = Math.max(0, randomTarget.hp - enemyResult.damage)
+            updatePartyMember(randomTarget.id, { hp: newHp })
+            
+            if (newHp <= 0) {
+              addLogEntry(`${randomTarget.name} has fallen!`, "death")
+              
+              // Check if all party members are dead
+              const aliveMember = party.members.find(m => m.hp > 0)
+              if (!aliveMember) {
+                setGamePhase("death")
+                return
+              }
+            }
+          }
+        }
+        
+        setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
+      }
+    } catch (error) {
+      console.error("Combat error:", error)
+      addLogEntry("Something went wrong during combat...", "system")
+    }
+
+    setIsProcessing(false)
+  }
+
   const renderDeathScreen = () => (
     <div className="max-w-4xl mx-auto px-4">
       <Card className="bg-gray-900 border-red-400 border-2 p-4 sm:p-6">
@@ -530,7 +632,72 @@ export default function Dungeon64() {
               </h2>
 
               <div className="space-y-3">
-                {gamePhase !== "combat" && (
+                {gamePhase === "combat" ? (
+                  <>
+                    {/* Combat Actions */}
+                    <div>
+                      <div className="text-xs text-red-300 mb-2 break-words">
+                        COMBAT TURN: {(() => {
+                          const currentTurnMember = getPartyMember(combatTurnOrder[currentTurnIndex])
+                          return currentTurnMember ? currentTurnMember.name : "ENEMY"
+                        })()}
+                      </div>
+                      
+                      {(() => {
+                        const currentTurnMember = getPartyMember(combatTurnOrder[currentTurnIndex])
+                        if (!currentTurnMember) {
+                          return (
+                            <div className="text-red-400 text-xs break-words">
+                              Enemy is thinking...
+                            </div>
+                          )
+                        }
+                        
+                        return (
+                          <div className="space-y-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-black border-red-400 text-red-400 hover:bg-red-900 text-xs"
+                              onClick={() => handleCombatAction("attack")}
+                              disabled={isProcessing}
+                            >
+                              {isProcessing ? "ATTACKING..." : "ATTACK"}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full bg-black border-blue-400 text-blue-400 hover:bg-blue-900 text-xs"
+                              onClick={() => handleCombatAction("defend")}
+                              disabled={isProcessing}
+                            >
+                              DEFEND
+                            </Button>
+                            
+                            {/* Healing Items */}
+                            {currentTurnMember.inventory.filter(item => item.healing).length > 0 && (
+                              <div className="border-t border-red-400 pt-2">
+                                <div className="text-xs text-green-300 mb-1 break-words">USE ITEM</div>
+                                {currentTurnMember.inventory.filter(item => item.healing).slice(0, 2).map((item, index) => (
+                                  <Button
+                                    key={index}
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full bg-black border-green-400 text-green-400 hover:bg-green-900 text-xs mb-1"
+                                    onClick={() => handleCombatAction("use_item", undefined, item)}
+                                    disabled={isProcessing}
+                                  >
+                                    {item.name} (+{item.healing} HP)
+                                  </Button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  </>
+                ) : (
                   <>
                     {/* Movement Buttons */}
                     <div>
