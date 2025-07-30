@@ -1,9 +1,9 @@
 {
   "node": {
-    "60dd55e1cfb05b1d1787b0f47d02f9c071c21f9019": {
+    "605f4188b492689e19dc10f6d9d57ddfef119d93f1": {
       "workers": {
         "app/page": {
-          "moduleId": "(action-browser)/./node_modules/.pnpm/next@15.2.4_@opentelemetry+api@1.9.0_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fapp%2Factions.ts%22%2C%5B%7B%22id%22%3A%2260dd55e1cfb05b1d1787b0f47d02f9c071c21f9019%22%2C%22exportedName%22%3A%22generateAIRoomDescription%22%7D%2C%7B%22id%22%3A%227087afc614849c71885cac046d27518c9fe56feb11%22%2C%22exportedName%22%3A%22generateAIEnemyEncounter%22%7D%2C%7B%22id%22%3A%227838a2c6b38d3aa2417ca7f7a47d3822a4eb178e25%22%2C%22exportedName%22%3A%22generateAICombatNarrative%22%7D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/.pnpm/next@15.2.4_@opentelemetry+api@1.9.0_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fapp%2Factions.ts%22%2C%5B%7B%22id%22%3A%22605f4188b492689e19dc10f6d9d57ddfef119d93f1%22%2C%22exportedName%22%3A%22generateAIRoomDescription%22%7D%2C%7B%22id%22%3A%22708808e96357bb3bcbd3ca02220279eb599665265c%22%2C%22exportedName%22%3A%22generateAIEnemyEncounter%22%7D%2C%7B%22id%22%3A%2278373de6d571c931fcbbdd8c8b44f096c601f3e923%22%2C%22exportedName%22%3A%22generateAICombatNarrative%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
         }
       },
@@ -11,10 +11,10 @@
         "app/page": "action-browser"
       }
     },
-    "7087afc614849c71885cac046d27518c9fe56feb11": {
+    "708808e96357bb3bcbd3ca02220279eb599665265c": {
       "workers": {
         "app/page": {
-          "moduleId": "(action-browser)/./node_modules/.pnpm/next@15.2.4_@opentelemetry+api@1.9.0_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fapp%2Factions.ts%22%2C%5B%7B%22id%22%3A%2260dd55e1cfb05b1d1787b0f47d02f9c071c21f9019%22%2C%22exportedName%22%3A%22generateAIRoomDescription%22%7D%2C%7B%22id%22%3A%227087afc614849c71885cac046d27518c9fe56feb11%22%2C%22exportedName%22%3A%22generateAIEnemyEncounter%22%7D%2C%7B%22id%22%3A%227838a2c6b38d3aa2417ca7f7a47d3822a4eb178e25%22%2C%22exportedName%22%3A%22generateAICombatNarrative%22%7D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/.pnpm/next@15.2.4_@opentelemetry+api@1.9.0_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fapp%2Factions.ts%22%2C%5B%7B%22id%22%3A%22605f4188b492689e19dc10f6d9d57ddfef119d93f1%22%2C%22exportedName%22%3A%22generateAIRoomDescription%22%7D%2C%7B%22id%22%3A%22708808e96357bb3bcbd3ca02220279eb599665265c%22%2C%22exportedName%22%3A%22generateAIEnemyEncounter%22%7D%2C%7B%22id%22%3A%2278373de6d571c931fcbbdd8c8b44f096c601f3e923%22%2C%22exportedName%22%3A%22generateAICombatNarrative%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
         }
       },
@@ -22,10 +22,10 @@
         "app/page": "action-browser"
       }
     },
-    "7838a2c6b38d3aa2417ca7f7a47d3822a4eb178e25": {
+    "78373de6d571c931fcbbdd8c8b44f096c601f3e923": {
       "workers": {
         "app/page": {
-          "moduleId": "(action-browser)/./node_modules/.pnpm/next@15.2.4_@opentelemetry+api@1.9.0_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fapp%2Factions.ts%22%2C%5B%7B%22id%22%3A%2260dd55e1cfb05b1d1787b0f47d02f9c071c21f9019%22%2C%22exportedName%22%3A%22generateAIRoomDescription%22%7D%2C%7B%22id%22%3A%227087afc614849c71885cac046d27518c9fe56feb11%22%2C%22exportedName%22%3A%22generateAIEnemyEncounter%22%7D%2C%7B%22id%22%3A%227838a2c6b38d3aa2417ca7f7a47d3822a4eb178e25%22%2C%22exportedName%22%3A%22generateAICombatNarrative%22%7D%5D%5D%5D&__client_imported__=true!",
+          "moduleId": "(action-browser)/./node_modules/.pnpm/next@15.2.4_@opentelemetry+api@1.9.0_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fapp%2Factions.ts%22%2C%5B%7B%22id%22%3A%22605f4188b492689e19dc10f6d9d57ddfef119d93f1%22%2C%22exportedName%22%3A%22generateAIRoomDescription%22%7D%2C%7B%22id%22%3A%22708808e96357bb3bcbd3ca02220279eb599665265c%22%2C%22exportedName%22%3A%22generateAIEnemyEncounter%22%7D%2C%7B%22id%22%3A%2278373de6d571c931fcbbdd8c8b44f096c601f3e923%22%2C%22exportedName%22%3A%22generateAICombatNarrative%22%7D%5D%5D%5D&__client_imported__=true!",
           "async": false
         }
       },
@@ -35,5 +35,5 @@
     }
   },
   "edge": {},
-  "encryptionKey": "4gSO0xFq5qIO5m95zofaWqPfR7hH4s9ngd6e+vxQgJc="
+  "encryptionKey": "zWHfT4U6n0WQ8Zn+aXoBVAAEodbllPXd4In5eVt/VxI="
 }
