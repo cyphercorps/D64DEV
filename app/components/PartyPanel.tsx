@@ -84,35 +84,7 @@ export default function PartyPanel({
                   <div className="text-purple-400 break-words">Loyalty: {member.loyalty}/100</div>
                 )}
 
-                {/* Individual Inventory */}
-                <div className="mt-2 pt-2 border-t border-gray-600">
-                  <div className="text-xs text-cyan-400 font-bold mb-1 break-words">
-                    INVENTORY ({member.inventory.length})
-                  </div>
-                  {member.inventory.length > 0 ? (
-                    <div className="space-y-1 max-h-20 overflow-y-auto">
-                      {member.inventory.map((item, index) => (
-                        <div key={index} className="text-xs text-gray-300 break-words">
-                          <div className="flex justify-between items-center">
-                            <span className="truncate">{item.name}</span>
-                            <span className="text-yellow-400 ml-1">{item.value}g</span>
-                          </div>
-                          {onTransferItemToShared && activePartyMember === member.id && (
-                            <Button
-                              onClick={() => onTransferItemToShared(member.id, index)}
-                              size="sm"
-                              className="h-4 px-1 text-xs bg-green-900 text-green-400 hover:bg-green-800"
-                            >
-                              Share
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-xs text-gray-500 italic">Empty</div>
-                  )}
-                </div>
+                
               </div>
 
               {/* Status Effects */}
@@ -158,59 +130,15 @@ export default function PartyPanel({
                       </div>
                     </div>
 
-                    {/* Inventory */}
+                    {/* Quick Inventory Summary */}
                     <div>
-                      <div className="text-green-300 mb-1 break-words">INVENTORY ({activeMember.inventory.length})</div>
-                      <div className="space-y-1 max-h-24 overflow-y-auto">
-                        {activeMember.inventory.length === 0 ? (
-                          <div className="text-gray-500 text-xs break-words">Empty</div>
-                        ) : (
-                          activeMember.inventory.map((item, index) => (
-                            <div
-                              key={index}
-                              className="flex justify-between items-center bg-gray-800 p-1 rounded text-xs"
-                            >
-                              <span className="text-yellow-400 break-words min-w-0 flex-1">{item.name}</span>
-                              {onTransferItemToShared && (
-                                <Button
-                                  size="sm"
-                                  className="ml-1 h-5 px-1 text-xs bg-blue-900 text-blue-400 hover:bg-blue-800"
-                                  onClick={() => onTransferItemToShared(activeMember.id, index)}
-                                >
-                                  Share
-                                </Button>
-                              )}
-                            </div>
-                          ))
-                        )}
+                      <div className="text-green-300 mb-1 break-words">EQUIPMENT SUMMARY</div>
+                      <div className="text-xs text-gray-400">
+                        Items: {activeMember.inventory.length} | 
+                        Weapons: {activeMember.inventory.filter(i => i.type === 'weapon').length} | 
+                        Consumables: {activeMember.inventory.filter(i => i.type === 'consumable').length}
                       </div>
                     </div>
-
-                    {/* Shared Inventory */}
-                    {party.sharedInventory.length > 0 && (
-                      <div>
-                        <div className="text-cyan-300 mb-1 break-words">SHARED INVENTORY ({party.sharedInventory.length})</div>
-                        <div className="space-y-1 max-h-24 overflow-y-auto">
-                          {party.sharedInventory.map((item, index) => (
-                            <div
-                              key={index}
-                              className="flex justify-between items-center bg-gray-800 p-1 rounded text-xs"
-                            >
-                              <span className="text-cyan-400 break-words min-w-0 flex-1">{item.name}</span>
-                              {onTransferItemFromShared && (
-                                <Button
-                                  size="sm"
-                                  className="ml-1 h-5 px-1 text-xs bg-green-900 text-green-400 hover:bg-green-800"
-                                  onClick={() => onTransferItemFromShared(activeMember.id, index)}
-                                >
-                                  Take
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
 
                     {!activeMember.isPlayer && (
                       <div>

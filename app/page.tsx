@@ -11,6 +11,7 @@ import { calculateBaseHp } from "./utils/gameUtils"
 import { LOOT_ITEMS, RECRUITABLE_NPCS } from "./data/gameData"
 import CharacterCreation from "./components/CharacterCreation"
 import PartyPanel from "./components/PartyPanel"
+import InventoryPanel from "./components/InventoryPanel"
 import { PartyMember, Party, Room, CombatTurn } from "./types/game"
 
 export default function Dungeon64() {
@@ -161,6 +162,60 @@ export default function Dungeon64() {
     })
 
     addLogEntry(`${member.name} took ${item.name} from shared inventory.`, "system")
+  }
+
+  const useItem = (memberId: string, itemIndex: number, isSharedItem: boolean = false) => {
+    if (!party) return
+
+    const member = party.members.find(m => m.id === memberId)
+    if (!member) return
+
+    let item: any
+    let sourceInventory: any[]
+
+    if (isSharedItem) {
+      if (itemIndex >= party.sharedInventory.length) return
+      item = party.sharedInventory[itemIndex]
+      sourceInventory = party.sharedInventory
+    } else {
+      if (itemIndex >= member.inventory.length) return
+      item = member.inventory[itemIndex]
+      sourceInventory = member.inventory
+    }
+
+    // Only allow using consumables or healing items
+    if (item.type !== "consumable" && !item.healing) {
+      addLogEntry(`${item.name} cannot be used directly.`, "system")
+      return
+    }
+
+    // Apply item effects
+    if (item.healing) {
+      const healAmount = item.healing
+      const newHp = Math.min(member.maxHp, member.hp + healAmount)
+      
+      updatePartyMember(memberId, { hp: newHp })
+      addLogEntry(`${member.name} uses ${item.name} and recovers ${healAmount} HP!`, "system")
+    } else if (item.effect) {
+      addLogEntry(`${member.name} uses ${item.name}. ${item.effect}`, "system")
+    }
+
+    // Remove item from inventory
+    if (isSharedItem) {
+      setParty(prev => ({
+        ...prev!,
+        sharedInventory: prev!.sharedInventory.filter((_, index) => index !== itemIndex)
+      }))
+    } else {
+      updatePartyMember(memberId, {
+        inventory: member.inventory.filter((_, index) => index !== itemIndex)
+      })
+    }
+
+    // Update character story
+    updatePartyMember(memberId, {
+      storyEvents: [...member.storyEvents, `Used ${item.name}`]
+    })
   }
 
   const handleRecruitment = (npcData: typeof RECRUITABLE_NPCS[0]) => {
@@ -544,8 +599,6 @@ export default function Dungeon64() {
                 setActivePartyMember={setActivePartyMember}
                 onRecruitment={handleRecruitment}
                 gamePhase={gamePhase}
-                onTransferItemToShared={transferItemToShared}
-                onTransferItemFromShared={transferItemFromShared}
               />
             )}
           </div>
@@ -624,9 +677,10 @@ export default function Dungeon64() {
             </Card>
           </div>
 
-          {/* Action Panel - Right */}
-          <div className="lg:col-span-3">
-            <Card className="bg-gray-900 border-green-400 border-2 h-full p-4">
+          {/* Right Panel - Actions and Inventory */}
+          <div className="lg:col-span-3 space-y-4">
+            {/* Action Panel */}
+            <Card className="bg-gray-900 border-green-400 border-2 p-4">
               <h2 className="text-green-400 text-lg font-bold mb-4 text-center border-b border-green-400 pb-2 break-words">
                 ACTIONS
               </h2>
@@ -797,6 +851,18 @@ export default function Dungeon64() {
                 </div>
               </div>
             </Card>
+
+            {/* Inventory Panel */}
+            {party && activePartyMember && (
+              <InventoryPanel
+                party={party}
+                activePartyMember={activePartyMember}
+                onTransferItemToShared={transferItemToShared}
+                onTransferItemFromShared={transferItemFromShared}
+                onUseItem={useItem}
+                gamePhase={gamePhase}
+              />
+            )}
           </div>
         </div>
 
