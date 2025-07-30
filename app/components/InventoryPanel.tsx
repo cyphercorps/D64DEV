@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -40,7 +39,7 @@ export default function InventoryPanel({
 
   const renderItemActions = (item: Item, itemIndex: number, isSharedItem: boolean = false) => {
     const canUse = item.type === "consumable" || (item.healing && item.healing > 0)
-    
+
     return (
       <div className="flex gap-1 mt-1">
         <Button
@@ -51,7 +50,7 @@ export default function InventoryPanel({
         >
           <Eye className="w-3 h-3" />
         </Button>
-        
+
         {canUse && onUseItem && (
           <Button
             size="sm"
@@ -62,7 +61,7 @@ export default function InventoryPanel({
             Use
           </Button>
         )}
-        
+
         {!isSharedItem && onTransferItemToShared && (
           <Button
             size="sm"
@@ -73,7 +72,7 @@ export default function InventoryPanel({
             <ArrowRight className="w-3 h-3" />
           </Button>
         )}
-        
+
         {isSharedItem && onTransferItemFromShared && (
           <Button
             size="sm"
@@ -107,13 +106,13 @@ export default function InventoryPanel({
           {item.value}g
         </div>
       </div>
-      
+
       {item.effect && (
         <div className="text-xs text-cyan-400 mb-2 break-words line-clamp-2">
           {item.effect}
         </div>
       )}
-      
+
       {(item.damage || item.healing) && (
         <div className="flex gap-2 text-xs mb-1">
           {item.damage && (
@@ -124,7 +123,7 @@ export default function InventoryPanel({
           )}
         </div>
       )}
-      
+
       {renderItemActions(item, itemIndex, isSharedItem)}
     </div>
   )
@@ -139,7 +138,7 @@ export default function InventoryPanel({
             {activeMember.name}'s Inventory ({activeMember.inventory.length})
           </h3>
         </div>
-        
+
         <ScrollArea className="h-64">
           {activeMember.inventory.length === 0 ? (
             <div className="text-center text-gray-500 italic py-8">
@@ -174,7 +173,7 @@ export default function InventoryPanel({
             </div>
           </Card>
         </CollapsibleTrigger>
-        
+
         <CollapsibleContent>
           <Card className="bg-gray-900 border-purple-400 border-2 border-t-0 p-4">
             <ScrollArea className="h-64">
@@ -211,45 +210,45 @@ export default function InventoryPanel({
                 ×
               </Button>
             </div>
-            
+
             <div className="space-y-3">
               <div>
                 <span className="text-cyan-400 font-semibold">Type: </span>
                 <span className="text-white capitalize">{selectedItem.type}</span>
               </div>
-              
+
               <div>
                 <span className="text-yellow-400 font-semibold">Value: </span>
                 <span className="text-white">{selectedItem.value} gold</span>
               </div>
-              
+
               {selectedItem.damage && (
                 <div>
                   <span className="text-red-400 font-semibold">Damage: </span>
                   <span className="text-white">{selectedItem.damage}</span>
                 </div>
               )}
-              
+
               {selectedItem.healing && (
                 <div>
                   <span className="text-green-400 font-semibold">Healing: </span>
                   <span className="text-white">{selectedItem.healing} HP</span>
                 </div>
               )}
-              
+
               {selectedItem.effect && (
                 <div>
                   <span className="text-cyan-400 font-semibold">Effect: </span>
                   <span className="text-white break-words">{selectedItem.effect}</span>
                 </div>
               )}
-              
+
               {selectedItem.aiGenerated && (
                 <div className="text-purple-400 text-sm italic">
                   🤖 AI Generated Item
                 </div>
               )}
-              
+
               {selectedItem.symbolic && (
                 <div className="text-cyan-400 text-sm italic break-words">
                   {selectedItem.symbolic}
@@ -258,6 +257,28 @@ export default function InventoryPanel({
             </div>
           </Card>
         </div>
+      )}
+          {onUseItem && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-6 px-2 text-xs bg-green-900 text-green-400 hover:bg-green-800 border-green-400"
+          onClick={() => onUseItem(activeMember.id, itemIndex, isSharedItem)}
+        disabled={
+          gamePhase === "combat" 
+            ? (!item.healing && item.type !== "consumable" && !item.spell)
+            : (!item.healing && item.type !== "consumable" && !item.name.includes("Ancient Tome"))
+        }
+        title={
+          gamePhase === "combat" 
+            ? "Use combat actions for spells and items during battle" 
+            : !item.healing && item.type !== "consumable" && !item.name.includes("Ancient Tome")
+              ? "This item cannot be used directly"
+              : undefined
+        }
+        >
+          Use
+        </Button>
       )}
     </div>
   )

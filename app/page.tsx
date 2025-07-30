@@ -60,15 +60,16 @@ export default function Dungeon64() {
 
         setIsProcessing(true)
 
-        // Small delay for dramatic effect
-        await new Promise(resolve => setTimeout(resolve, 1500))
-
+        // Check if party is already dead before enemy acts
         const aliveMembersInParty = party.members.filter(m => m.hp > 0)
         if (aliveMembersInParty.length === 0) {
           setGamePhase("death")
           setIsProcessing(false)
           return
         }
+
+        // Small delay for dramatic effect
+        await new Promise(resolve => setTimeout(resolve, 1500))
 
         const randomTarget = aliveMembersInParty[Math.floor(Math.random() * aliveMembersInParty.length)]
 
@@ -97,9 +98,13 @@ export default function Dungeon64() {
           if (newHp <= 0) {
             addLogEntry(`${enemyResult.target.name} has fallen!`, "death")
 
-            // Check if all party members are dead
-            const aliveMember = party.members.find(m => m.hp > 0)
-            if (!aliveMember) {
+            // Check if all party members are dead after this damage
+            const remainingAliveMembers = party.members.filter(m => 
+              m.id === enemyResult.target.id ? newHp > 0 : m.hp > 0
+            )
+            
+            if (remainingAliveMembers.length === 0) {
+              addLogEntry("Your party has been defeated...", "death")
               setGamePhase("death")
               setIsProcessing(false)
               return
@@ -115,6 +120,16 @@ export default function Dungeon64() {
       executeEnemyTurn()
     }
   }, [gamePhase, currentEnemy, combatTurnOrder, currentTurnIndex, isProcessing, party, updatePartyMember, addLogEntry])
+
+  // Check for party death at the start of each turn
+  useEffect(() => {
+    if (gamePhase === "combat" && party) {
+      const aliveMembersInParty = party.members.filter(m => m.hp > 0)
+      if (aliveMembersInParty.length === 0) {
+        setGamePhase("death")
+      }
+    }
+  }, [gamePhase, party, combatTurnOrder, currentTurnIndex])
 
   const handleCreateCharacter = async (characterData: any) => {
     const { rolledStats, selectedClass, characterName, selectedBackground, characterPortrait, classData, backgroundData } = characterData
@@ -271,33 +286,73 @@ export default function Dungeon64() {
       sourceInventory = member.inventory
     }
 
-    // Only allow using consumables or healing items
-    if (item.type !== "consumable" && !item.healing) {
-      addLogEntry(`${item.name} cannot be used directly.`, "system")
-      return
-    }
-
-    // Apply item effects
-    if (item.healing) {
+    // Handle different item types
+    if (item.name.includes("Ancient Tome") && (member.class === "Mage" || member.class === "Cleric")) {
+      // Learn spell from ancient tome
+      const spellToLearn = item.spell
+      if (spellToLearn && !member.knownSpells.includes(spellToLearn)) {
+        updatePartyMember(memberId, {
+          knownSpells: [...member.knownSpells, spellToLearn]
+        })
+        addLogEntry(`${member.name} studies the ${item.name} and learns ${spellToLearn}!`, "system")
+        
+        // Remove item from inventory
+        if (isSharedItem) {
+          setParty(prev => ({
+            ...prev!,
+            sharedInventory: prev!.sharedInventory.filter((_, index) => index !== itemIndex)
+          }))
+        } else {
+          updatePartyMember(memberId, {
+            inventory: member.inventory.filter((_, index) => index !== itemIndex)
+          })
+        }
+      } else if (member.class !== "Mage" && member.class !== "Cleric") {
+        addLogEntry(`${member.name} cannot comprehend the arcane text.`, "system")
+        return
+      } else {
+        addLogEntry(`${member.name} already knows this spell.`, "system")
+        return
+      }
+    } else if (item.healing) {
+      // Apply healing
       const healAmount = item.healing
       const newHp = Math.min(member.maxHp, member.hp + healAmount)
 
       updatePartyMember(memberId, { hp: newHp })
       addLogEntry(`${member.name} uses ${item.name} and recovers ${healAmount} HP!`, "system")
-    } else if (item.effect) {
-      addLogEntry(`${member.name} uses ${item.name}. ${item.effect}`, "system")
-    }
-
-    // Remove item from inventory
-    if (isSharedItem) {
-      setParty(prev => ({
-        ...prev!,
-        sharedInventory: prev!.sharedInventory.filter((_, index) => index !== itemIndex)
-      }))
+      
+      // Remove item from inventory
+      if (isSharedItem) {
+        setParty(prev => ({
+          ...prev!,
+          sharedInventory: prev!.sharedInventory.filter((_, index) => index !== itemIndex)
+        }))
+      } else {
+        updatePartyMember(memberId, {
+          inventory: member.inventory.filter((_, index) => index !== itemIndex)
+        })
+      }
+    } else if (item.type === "consumable" && !item.name.includes("Ancient Tome")) {
+      // Generic consumable effect
+      if (item.effect) {
+        addLogEntry(`${member.name} uses ${item.name}. ${item.effect}`, "system")
+      }
+      
+      // Remove item from inventory
+      if (isSharedItem) {
+        setParty(prev => ({
+          ...prev!,
+          sharedInventory: prev!.sharedInventory.filter((_, index) => index !== itemIndex)
+        }))
+      } else {
+        updatePartyMember(memberId, {
+          inventory: member.inventory.filter((_, index) => index !== itemIndex)
+        })
+      }
     } else {
-      updatePartyMember(memberId, {
-        inventory: member.inventory.filter((_, index) => index !== itemIndex)
-      })
+      addLogEntry(`${item.name} cannot be used directly.`, "system")
+      return
     }
 
     // Update character story
@@ -501,7 +556,7 @@ export default function Dungeon64() {
     return dungeon?.rooms.get(dungeon.currentRoomId)
   }
 
-  const handleCombatAction = async (action: string, target?: string, item?: any) => {
+  const handleCombatAction = async (action: string, target?: string, item?: any, spellName?: string) => {
     if (!currentEnemy || !party || isProcessing) return
 
     const currentMember = getPartyMember(combatTurnOrder[currentTurnIndex])
@@ -553,9 +608,101 @@ export default function Dungeon64() {
         addLogEntry(`${currentMember.name} takes a defensive stance.`, "combat")
         // TODO: Add defense bonus logic
         setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
+      } else if (action === "cast_spell" && spellName) {
+        const { MagicService } = await import("./services/magicService")
+        const spellResult = MagicService.castSpell(currentMember, spellName, currentMember)
+        
+        if (spellResult.success) {
+          addLogEntry(spellResult.message, "combat")
+          
+          // Update caster with used spell slot
+          updatePartyMember(currentMember.id, {
+            spellSlots: [...currentMember.spellSlots]
+          })
+          
+          // Apply spell damage to enemy if applicable
+          if (spellResult.damage && spellResult.damage > 0) {
+            const newEnemyHp = Math.max(0, currentEnemy.hp - spellResult.damage)
+            setCurrentEnemy(prev => ({ ...prev!, hp: newEnemyHp }))
+            
+            if (newEnemyHp <= 0) {
+              addLogEntry(`The ${currentEnemy.name} is defeated by magic!`, "combat")
+              addLogEntry("Victory belongs to your party!", "narrative")
+              
+              // Victory logic same as attack
+              const xpGained = currentEnemy.xpReward
+              party.members.forEach((member) => {
+                const newXp = member.xp + Math.floor(xpGained / party.members.length)
+                const newLevel = Math.floor(newXp / 100) + 1
+
+                updatePartyMember(member.id, {
+                  xp: newXp,
+                  level: newLevel,
+                  storyEvents: [...member.storyEvents, `Defeated ${currentEnemy.name} with magic`],
+                })
+
+                if (newLevel > member.level) {
+                  addLogEntry(`${member.name} reached level ${newLevel}!`, "level")
+                }
+              })
+
+              if (currentEnemy.loot) {
+                setParty(prev => ({
+                  ...prev!,
+                  sharedInventory: [...prev!.sharedInventory, ...currentEnemy.loot!]
+                }))
+                addLogEntry(`Found: ${currentEnemy.loot.map(item => item.name).join(", ")}`, "system")
+              }
+
+              setCurrentEnemy(null)
+              setCombatTurnOrder([])
+              setCurrentTurnIndex(0)
+              setGamePhase("dungeon")
+              setIsProcessing(false)
+              return
+            }
+          }
+        } else {
+          addLogEntry(spellResult.message, "system")
+        }
+        
+        setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
       } else if (action === "use_item" && item) {
-        // Use healing item
-        if (item.healing) {
+        // Handle spell scrolls as spells
+        if (item.type === "consumable" && item.spell) {
+          const { MagicService } = await import("./services/magicService")
+          const spellResult = MagicService.castSpell(currentMember, item.spell, currentMember)
+          
+          if (spellResult.success) {
+            addLogEntry(`${currentMember.name} reads the ${item.name}!`, "system")
+            addLogEntry(spellResult.message, "combat")
+            
+            // Remove scroll from inventory
+            updatePartyMember(currentMember.id, {
+              inventory: currentMember.inventory.filter(i => i !== item)
+            })
+            
+            // Apply spell damage to enemy if applicable
+            if (spellResult.damage && spellResult.damage > 0) {
+              const newEnemyHp = Math.max(0, currentEnemy.hp - spellResult.damage)
+              setCurrentEnemy(prev => ({ ...prev!, hp: newEnemyHp }))
+              
+              if (newEnemyHp <= 0) {
+                addLogEntry(`The ${currentEnemy.name} is defeated by the scroll's magic!`, "combat")
+                // Handle victory same as spell casting above
+                setCurrentEnemy(null)
+                setCombatTurnOrder([])
+                setCurrentTurnIndex(0)
+                setGamePhase("dungeon")
+                setIsProcessing(false)
+                return
+              }
+            }
+          } else {
+            addLogEntry(`The scroll crumbles uselessly...`, "system")
+          }
+        } else if (item.healing) {
+          // Regular healing item
           const healAmount = item.healing
           const newHp = Math.min(currentMember.maxHp, currentMember.hp + healAmount)
 
@@ -565,6 +712,18 @@ export default function Dungeon64() {
           })
 
           addLogEntry(`${currentMember.name} uses ${item.name} and recovers ${healAmount} HP!`, "system")
+        } else if (item.name.includes("Ancient Tome") && (currentMember.class === "Mage" || currentMember.class === "Cleric")) {
+          // Learn spell from ancient tome
+          const spellToLearn = item.spell
+          if (spellToLearn && !currentMember.knownSpells.includes(spellToLearn)) {
+            updatePartyMember(currentMember.id, {
+              knownSpells: [...currentMember.knownSpells, spellToLearn],
+              inventory: currentMember.inventory.filter(i => i !== item)
+            })
+            addLogEntry(`${currentMember.name} learns ${spellToLearn} from the ${item.name}!`, "system")
+          } else {
+            addLogEntry(`${currentMember.name} already knows this spell or cannot learn it.`, "system")
+          }
         }
         setCurrentTurnIndex((prev) => (prev + 1) % combatTurnOrder.length)
       }
@@ -789,10 +948,54 @@ export default function Dungeon64() {
                               DEFEND
                             </Button>
 
+                            {/* Cast Spell Button */}
+                            {(currentTurnMember.class === "Mage" || currentTurnMember.class === "Cleric") && 
+                             currentTurnMember.knownSpells.length > 0 && (
+                              <div className="border-t border-purple-400 pt-2">
+                                <div className="text-xs text-purple-300 mb-1 break-words">CAST SPELL</div>
+                                {currentTurnMember.knownSpells.slice(0, 3).map((spellName, index) => {
+                                  const { MagicService } = require("./services/magicService")
+                                  const canCast = MagicService.canCastSpell(currentTurnMember, spellName)
+                                  return (
+                                    <Button
+                                      key={index}
+                                      variant="outline"
+                                      size="sm"
+                                      className="w-full bg-black border-purple-400 text-purple-400 hover:bg-purple-900 text-xs mb-1"
+                                      onClick={() => handleCombatAction("cast_spell", undefined, undefined, spellName)}
+                                      disabled={isProcessing || !canCast.canCast}
+                                      title={!canCast.canCast ? canCast.reason : undefined}
+                                    >
+                                      {spellName}
+                                    </Button>
+                                  )
+                                })}
+                              </div>
+                            )}
+
+                            {/* Spell Scrolls */}
+                            {currentTurnMember.inventory.filter(item => item.spell && item.type === "consumable").length > 0 && (
+                              <div className="border-t border-cyan-400 pt-2">
+                                <div className="text-xs text-cyan-300 mb-1 break-words">SPELL SCROLLS</div>
+                                {currentTurnMember.inventory.filter(item => item.spell && item.type === "consumable").slice(0, 2).map((item, index) => (
+                                  <Button
+                                    key={index}
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full bg-black border-cyan-400 text-cyan-400 hover:bg-cyan-900 text-xs mb-1"
+                                    onClick={() => handleCombatAction("use_item", undefined, item)}
+                                    disabled={isProcessing}
+                                  >
+                                    {item.name}
+                                  </Button>
+                                ))}
+                              </div>
+                            )}
+
                             {/* Healing Items */}
                             {currentTurnMember.inventory.filter(item => item.healing).length > 0 && (
-                              <div className="border-t border-red-400 pt-2">
-                                <div className="text-xs text-green-300 mb-1 break-words">USE ITEM</div>
+                              <div className="border-t border-green-400 pt-2">
+                                <div className="text-xs text-green-300 mb-1 break-words">HEALING</div>
                                 {currentTurnMember.inventory.filter(item => item.healing).slice(0, 2).map((item, index) => (
                                   <Button
                                     key={index}
