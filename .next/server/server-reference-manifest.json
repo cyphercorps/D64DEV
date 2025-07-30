@@ -1,0 +1,39 @@
+{
+  "node": {
+    "60c82acd92a15289ef2b89eadbf7f698368d9c21bf": {
+      "workers": {
+        "app/page": {
+          "moduleId": "(action-browser)/./node_modules/.pnpm/next@15.2.4_@opentelemetry+api@1.9.0_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fapp%2Factions.ts%22%2C%5B%7B%22id%22%3A%2260c82acd92a15289ef2b89eadbf7f698368d9c21bf%22%2C%22exportedName%22%3A%22generateAIRoomDescription%22%7D%2C%7B%22id%22%3A%2270476e7703915d06c6e7c383701e5a51de01f3b7b1%22%2C%22exportedName%22%3A%22generateAIEnemyEncounter%22%7D%2C%7B%22id%22%3A%2278ccbb60518a33a9ead9be4b99f77ff005199144b0%22%2C%22exportedName%22%3A%22generateAICombatNarrative%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      }
+    },
+    "70476e7703915d06c6e7c383701e5a51de01f3b7b1": {
+      "workers": {
+        "app/page": {
+          "moduleId": "(action-browser)/./node_modules/.pnpm/next@15.2.4_@opentelemetry+api@1.9.0_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fapp%2Factions.ts%22%2C%5B%7B%22id%22%3A%2260c82acd92a15289ef2b89eadbf7f698368d9c21bf%22%2C%22exportedName%22%3A%22generateAIRoomDescription%22%7D%2C%7B%22id%22%3A%2270476e7703915d06c6e7c383701e5a51de01f3b7b1%22%2C%22exportedName%22%3A%22generateAIEnemyEncounter%22%7D%2C%7B%22id%22%3A%2278ccbb60518a33a9ead9be4b99f77ff005199144b0%22%2C%22exportedName%22%3A%22generateAICombatNarrative%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      }
+    },
+    "78ccbb60518a33a9ead9be4b99f77ff005199144b0": {
+      "workers": {
+        "app/page": {
+          "moduleId": "(action-browser)/./node_modules/.pnpm/next@15.2.4_@opentelemetry+api@1.9.0_react-dom@19.1.1_react@19.1.1__react@19.1.1/node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Frunner%2Fworkspace%2Fapp%2Factions.ts%22%2C%5B%7B%22id%22%3A%2260c82acd92a15289ef2b89eadbf7f698368d9c21bf%22%2C%22exportedName%22%3A%22generateAIRoomDescription%22%7D%2C%7B%22id%22%3A%2270476e7703915d06c6e7c383701e5a51de01f3b7b1%22%2C%22exportedName%22%3A%22generateAIEnemyEncounter%22%7D%2C%7B%22id%22%3A%2278ccbb60518a33a9ead9be4b99f77ff005199144b0%22%2C%22exportedName%22%3A%22generateAICombatNarrative%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "EreEjxJ8nAuOoif/TwZVGIUqIYrVI2G8aAUtZYFURnI="
+}
