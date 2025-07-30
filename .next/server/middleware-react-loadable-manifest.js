@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{\"app/page.tsx -> ./components/CharacterCreation\":{\"id\":\"app/page.tsx -> ./components/CharacterCreation\",\"files\":[\"static/chunks/_app-pages-browser_app_components_CharacterCreation_tsx.js\"]},\"app/page.tsx -> ./components/PartyPanel\":{\"id\":\"app/page.tsx -> ./components/PartyPanel\",\"files\":[\"static/chunks/_app-pages-browser_app_components_PartyPanel_tsx.js\"]}}"
+self.__REACT_LOADABLE_MANIFEST="{}"
